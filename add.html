@@ -400,12 +400,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Android передає все через "text": "URL Назва відео"
     const textParam = getParam('text') || '';
     if (textParam) {
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                const st = document.querySelector('.status');
-                if (st) st.textContent = 'TEXT: ' + textParam;
-            }, 100);
-        });
+        const match = textParam.match(/^(https?:\/\/[^\s]+)\s*(.*)$/);
+        if (match) {
+            if (!videoUrl) videoUrl = match[1];
+            if (!videoTitle) videoTitle = match[2] || '';
+        }
     }
     
     
