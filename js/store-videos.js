@@ -15,7 +15,7 @@ window.VideosStore = (function () {
 
     async function load(albumFile) {
         filename = albumFile;
-        const res = await fetch('/data/' + albumFile, { cache: 'no-store' });
+        const res = await fetch('/video-catalog/data/' + albumFile, { cache: 'no-store' });
         if (!res.ok) throw new Error(`${albumFile}: HTTP ${res.status}`);
         const json = await res.json();
         data = Array.isArray(json) ? json : [];
