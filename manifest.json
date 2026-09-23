@@ -22,12 +22,13 @@
       "purpose": "any maskable"
     }
   ],
-    "share_target": {
+      "share_target": {
     "action": "/video-catalog/add.html",
     "method": "GET",
     "enctype": "application/x-www-form-urlencoded",
     "params": {
       "url": "url",
+      "text": "text",
       "title": "title"
     }
   }
