@@ -1,0 +1,191 @@
+/* ============================================================
+   ХЛІБНІ КРИХТИ
+   ============================================================ */
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.breadcrumbs a {
+    color: var(--primary, #2563eb);
+    text-decoration: none;
+    font-weight: 500;
+}
+.breadcrumbs a:hover { text-decoration: underline; }
+.breadcrumbs .sep { color: #cbd5e1; }
+.breadcrumbs .current { color: var(--dark, #1e293b); font-weight: 600; }
+
+/* ============================================================
+   ЗАГОЛОВОК АЛЬБОМУ
+   ============================================================ */
+.album-header {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.album-cover {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    background-size: cover;
+    background-position: center;
+    background-color: #e2e8f0;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: white;
+    overflow: hidden;
+}
+.album-cover.placeholder {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+.album-meta { flex: 1; min-width: 0; }
+.album-meta h1 {
+    margin: 0 0 8px;
+    font-size: 1.8rem;
+    line-height: 1.2;
+}
+.album-description {
+    color: #64748b;
+    margin: 0 0 12px;
+    line-height: 1.5;
+}
+.album-description:empty { display: none; }
+.album-stats {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+@media (max-width: 600px) {
+    .album-header { flex-direction: column; }
+    .album-cover { width: 100%; height: 180px; }
+}
+
+/* ============================================================
+   КАТАЛОГ РОЗДІЛІВ
+   ============================================================ */
+.catalog {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+}
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+}
+
+.status {
+    text-align: center;
+    min-height: 1.5em;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+.status.error { color: #dc2626; font-weight: 600; }
+
+/* ============================================================
+   ВИБІР ОБКЛАДИНКИ (модалка розділу)
+   ============================================================ */
+.cover-picker {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    margin-top: 6px;
+}
+.cover-preview {
+    width: 120px;
+    height: 90px;
+    border-radius: 8px;
+    background-color: #f1f5f9;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+.cover-preview.empty {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #94a3b8;
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+}
+.cover-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.cover-controls {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+.cover-controls .btn {
+    align-self: flex-start;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+}
+.cover-info {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 0;
+    word-break: break-all;
+}
+.cover-info:empty { display: none; }
+
+/* Підсвітка помилки на полі */
+.modal-field input.error {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220,38,38,0.15);
+}
+
+/* ============================================================
+   БАНЕР НЕЗБЕРЕЖЕНИХ ЗМІН
+   ============================================================ */
+.unsaved-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 8000;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    background: #1e293b;
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    font-size: 0.9rem;
+    animation: banner-in 0.25s ease-out;
+    flex-wrap: wrap;
+}
+@keyframes banner-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.unsaved-banner .btn {
+    background: var(--primary, #2563eb);
+    color: white;
+    border: none;
+    white-space: nowrap;
+}
+.unsaved-banner .btn:hover { opacity: 0.9; }

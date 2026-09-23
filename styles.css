@@ -1,0 +1,94 @@
+:root { --primary: #2563eb; --dark: #1e293b; --light: #f8fafc; --danger: #dc2626; }
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: var(--light);
+    color: var(--dark);
+}
+
+header { text-align: center; margin-bottom: 30px; }
+
+/* Навігація */
+.nav-container { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+.tabs { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+.btn {
+    padding: 10px 20px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: 0.2s;
+    font-size: 0.9rem;
+}
+.btn.active, .btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+.btn-dark { background: var(--dark); color: white; border-color: var(--dark); }
+
+/* Статус */
+.status { text-align: center; color: #64748b; min-height: 1.5em; margin-bottom: 10px; }
+.status.error { color: var(--danger); font-weight: 600; }
+
+/* Галерея */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    background: #000;
+}
+.video-container iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+.video-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    position: static;
+    padding: 0;
+    height: 180px;
+}
+.card-info {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+}
+.card-title { font-size: 1rem; margin: 0; font-weight: 600; line-height: 1.3; }
+.badge {
+    background: #e2e8f0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    width: fit-content;
+}
+
+/* Пагінація */
+.load-more-container { text-align: center; margin-top: 40px; }
+.hidden { display: none !important; }

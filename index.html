@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Відео Академія — Каталог альбомів</title>
+    <meta name="description" content="Каталог відео з бойових мистецтв">
+
+    <!-- Базовий шар -->
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Спільні модулі стилів -->
+    <link rel="stylesheet" href="css/context-card.css">
+    <link rel="stylesheet" href="css/modal.css">
+
+    <!-- Стилі цієї сторінки -->
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+<header class="site-header">
+    <h1>Відео Академія Бойових Мистецтв</h1>
+    <p class="subtitle">Каталог альбомів</p>
+</header>
+
+<main class="catalog">
+    <div class="catalog-grid" id="albums-grid">
+        <!-- Картки альбомів генеруються у index.js -->
+    </div>
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+</main>
+
+<footer class="site-footer">
+    <p>
+        <a href="manual.html">📖 Посібник</a> ·
+        <a href="admin/admin.html">⚙️ Редактор</a>
+    </p>
+</footer>
+
+<!-- Спільні модулі JS (порядок важливий) -->
+<script src="js/file-storage.js"></script>
+<script src="js/store-albums.js"></script>
+<script src="js/modal.js"></script>
+<script src="js/context-card.js"></script>
+
+<!-- Логіка цієї сторінки -->
+<script src="index.js"></script>
+</body>
+</html>

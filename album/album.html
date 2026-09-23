@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Завантаження… — Відео Академія</title>
+    <meta name="description" content="Каталог розділів альбому">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../css/context-card.css">
+    <link rel="stylesheet" href="../css/modal.css">
+    <link rel="stylesheet" href="album.css">
+</head>
+<body>
+
+<header class="site-header">
+    <nav class="breadcrumbs" aria-label="Навігація">
+        <a href="../index.html">🏠 Головна</a>
+        <span class="sep">›</span>
+        <span id="crumb-album" class="current">Альбом</span>
+    </nav>
+
+    <div class="album-header">
+        <div class="album-cover" id="album-cover"></div>
+        <div class="album-meta">
+            <h1 id="album-title">Завантаження…</h1>
+            <p id="album-description" class="album-description"></p>
+            <p class="album-stats">
+                <span id="stat-sections">—</span> розділів ·
+                <span id="stat-videos">—</span> відео
+            </p>
+        </div>
+    </div>
+</header>
+
+<main class="catalog">
+    <div class="catalog-grid" id="sections-grid">
+        <!-- картки розділів генеруються -->
+    </div>
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+</main>
+
+<footer class="site-footer">
+    <p>
+        <a href="../index.html">← До всіх альбомів</a>
+    </p>
+</footer>
+
+<!-- Спільні модулі -->
+<script src="../js/file-storage.js"></script>
+<script src="../js/store-albums.js"></script>
+<script src="../js/store-videos.js"></script>
+<script src="../js/modal.js"></script>
+<script src="../js/context-card.js"></script>
+
+<!-- Логіка цієї сторінки -->
+<script src="album.js"></script>
+</body>
+</html>

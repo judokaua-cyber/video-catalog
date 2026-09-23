@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Завантаження… — Відео Академія</title>
+    <meta name="description" content="Відео розділу">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../css/context-card.css">
+    <link rel="stylesheet" href="../css/modal.css">
+    <link rel="stylesheet" href="section.css">
+</head>
+<body>
+
+<header class="site-header">
+    <nav class="breadcrumbs" aria-label="Навігація">
+        <a href="../index.html">🏠 Головна</a>
+        <span class="sep">›</span>
+        <a id="crumb-album" href="../index.html">Альбом</a>
+        <span class="sep">›</span>
+        <span id="crumb-section" class="current">Розділ</span>
+    </nav>
+
+         <div class="section-header">
+        <div class="section-cover" id="section-cover"></div>
+
+        <div class="section-meta">
+            <h1 id="section-title">Завантаження…</h1>
+            <p id="section-description" class="section-description"></p>
+            <p class="section-stats">
+                <span id="stat-videos">—</span> відео
+            </p>
+        </div>
+
+        <div class="section-controls">
+            <div class="search-wrap">
+                <input type="search" id="search-input"
+                       placeholder="🔎 Пошук…"
+                       autocomplete="off" aria-label="Пошук">
+                <button id="search-clear" class="search-clear" hidden aria-label="Очистити">✕</button>
+            </div>
+            <div class="view-toggle">
+                <button class="btn active" data-view="grid" type="button">▦ Сітка</button>
+                <button class="btn" data-view="list" type="button">☰ Список</button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="catalog">
+    <div class="video-grid" id="video-grid">
+        <!-- картки відео генеруються -->
+    </div>
+
+    <div id="empty-state" class="empty-state" hidden>
+        <p>😕 У цьому розділі нічого не знайдено.</p>
+        <button class="btn" id="reset-search">Скинути пошук</button>
+    </div>
+
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+</main>
+
+<footer class="site-footer">
+    <p>
+        <a id="footer-album-link" href="../index.html">← До альбому</a>
+    </p>
+</footer>
+
+<!-- Спільні модулі -->
+<script src="../js/file-storage.js"></script>   <!-- ← додано -->
+<script src="../js/store-albums.js"></script>
+<script src="../js/store-videos.js"></script>
+<script src="../js/modal.js"></script>
+<script src="../js/context-card.js"></script>
+<script src="../js/modal-move-dup.js"></script>
+
+<!-- Логіка цієї сторінки -->
+<script src="section.js"></script>
+</body>
+</html>
