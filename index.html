@@ -47,7 +47,13 @@
 <script src="js/store-albums.js"></script>
 <script src="js/modal.js"></script>
 <script src="js/context-card.js"></script>
-
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(err => {
+        console.warn('SW registration failed:', err);
+    });
+}
+</script>
 <!-- Логіка цієї сторінки -->
 <script src="index.js"></script>
 </body>
