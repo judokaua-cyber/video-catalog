@@ -586,8 +586,12 @@ function showUnsavedHint() {
 
                 showUnsavedHint();
 
-                if (result.method === 'fs') {
+            if (result.method === 'both') {
+                    setStatus('✅ Записано локально та закомічено на GitHub.');
+                } else if (result.method === 'fs') {
                     setStatus('✅ Збережено у вибрану теку.');
+                } else if (result.method === 'github') {
+                    setStatus('✅ Закомічено на GitHub (локально не записано).');
                 } else {
                     setStatus('✅ Завантажено в Downloads. Перетягніть у data/.');
                 }
