@@ -176,7 +176,6 @@
 <body>
 
 <div class="card" id="card">
-    <!-- Вміст генерується JS -->
     <div class="status">Завантаження…</div>
 </div>
 
@@ -185,7 +184,7 @@
 /* ═══════════════════════════════════════════════════════════
    add.html
    Сторінка для швидкого додавання відео з YouTube.
-   Приймає параметри ?url=...&title=...
+   Приймає параметри ?url=...&title=... або ?text=... (Android)
    Додає відео в розділ "Нерозподілені" обраного альбому.
    ═══════════════════════════════════════════════════════════ */
 
@@ -283,11 +282,9 @@ function renderMain() {
         <div class="status"></div>
     `;
 
-    // Заголовок (назва відео)
     const titleEl = document.getElementById('video-title');
     titleEl.textContent = videoTitle || 'Нове відео';
 
-    // Кнопки альбомів
     const albumsEl = document.getElementById('albums');
     ALBUMS.forEach(album => {
         const btn = document.createElement('button');
@@ -307,7 +304,6 @@ function renderMain() {
         albumsEl.appendChild(btn);
     });
 
-    // Кнопка Зберегти
     document.getElementById('save-btn').addEventListener('click', doSave);
 }
 
@@ -327,12 +323,10 @@ async function doSave() {
         const albumFile = selectedAlbum + '.json';
         const repoPath = 'data/' + albumFile;
 
-        // 1. Читаємо поточний файл альбому
         const existing = await GitHubAPI.readFile(repoPath);
         let videos = existing ? JSON.parse(existing.content) : [];
         if (!Array.isArray(videos)) videos = [];
 
-        // 2. Перевірка на дублікат
         const newId = extractYouTubeId(videoUrl);
         if (!newId) {
             throw new Error('Некоректне посилання на YouTube');
@@ -348,18 +342,15 @@ async function doSave() {
             return;
         }
 
-        // 3. Додаємо відео в "Нерозподілені"
         videos.push({
             title: videoTitle || 'Без назви',
             section: UNDISTRIBUTED,
             url: 'https://www.youtube.com/watch?v=' + newId
         });
 
-        // 4. Записуємо назад
         const content = JSON.stringify(videos, null, 2);
         await GitHubAPI.writeFile(repoPath, content, `Add video to ${albumFile}`);
 
-        // 5. Успіх
         renderSuccess();
 
     } catch (err) {
@@ -379,9 +370,7 @@ function renderSuccess() {
         </div>
     `;
     setTimeout(() => {
-        // Спробувати закрити вікно (працює, якщо відкрито з "Поділитися")
         window.close();
-        // Якщо не вдалось — повернутись на головну
         setTimeout(() => {
             location.href = 'index.html';
         }, 500);
@@ -393,11 +382,11 @@ function renderSuccess() {
    ═══════════════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Читаємо параметри
+    // Параметри: url, title (стандартні)
     videoUrl = getParam('url') || '';
     videoTitle = getParam('title') || '';
 
-    // Android передає все через "text": "URL Назва відео"
+    // Android передає все через text: "URL Назва відео"
     const textParam = getParam('text') || '';
     if (textParam) {
         const match = textParam.match(/^(https?:\/\/[^\s]+)\s*(.*)$/);
@@ -406,17 +395,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!videoTitle) videoTitle = match[2] || '';
         }
     }
-    
-    
-        // Перший токен — URL, решта — назва
-        const match = textParam.match(/^(https?:\/\/[^\s]+)\s*(.*)$/);
-        if (match) {
-            if (!videoUrl) videoUrl = match[1];
-            if (!videoTitle) videoTitle = match[2] || '';
-        }
-    }
 
-    // Якщо URL немає — показати повідомлення
+    // Якщо URL немає — показати заглушку
     if (!videoUrl) {
         document.getElementById('card').innerHTML = `
             <h1>Додати відео</h1>
@@ -428,10 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Якщо токен є — показати основну форму
-    // Якщо ні — показати налаштування
+    // Токен
     if (GitHubAPI.hasToken()) {
-        // Перевіряємо токен асинхронно
         GitHubAPI.checkToken().then(ok => {
             if (ok) {
                 renderMain();
