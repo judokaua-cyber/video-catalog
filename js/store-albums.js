@@ -37,7 +37,7 @@ window.AlbumsStore = (function () {
 
     async function load() {
         if (loaded) return albums;
-            const res = await fetch('/data/albums.json', { cache: 'no-store' });
+            const res = await fetch('../data/albums.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('albums.json: HTTP ' + res.status);
         albums = await res.json();
         if (!Array.isArray(albums)) albums = [];
