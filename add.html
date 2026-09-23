@@ -1,1 +1,429 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Додати відео — Відео Академія</title>
 
+    <style>
+        :root {
+            --primary: #2563eb;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --muted: #64748b;
+            --ok: #16a34a;
+            --err: #dc2626;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--light);
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            padding: 32px 28px;
+            max-width: 480px;
+            width: calc(100% - 32px);
+            margin: 16px;
+        }
+        h1 {
+            font-size: 1.1rem;
+            margin: 0 0 20px;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--dark);
+            word-wrap: break-word;
+        }
+        h1:empty { display: none; }
+
+        .albums {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .album-btn {
+            padding: 18px 20px;
+            border: 2px solid var(--border);
+            background: white;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+            font-family: inherit;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .album-btn .icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background: #e2e8f0;
+            flex-shrink: 0;
+        }
+        .album-btn:hover {
+            border-color: var(--primary);
+        }
+        .album-btn.active {
+            border-color: var(--primary);
+            background: #eff6ff;
+            color: var(--primary);
+        }
+        .album-btn.active .icon {
+            background: var(--primary);
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.15s;
+            font-family: inherit;
+        }
+        .save-btn:hover:not(:disabled) { opacity: 0.9; }
+        .save-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .token-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .token-form label {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+        .token-form input {
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: ui-monospace, monospace;
+        }
+        .token-form input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .token-form button {
+            padding: 14px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .token-form button:hover { opacity: 0.9; }
+
+        .success {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .success .check {
+            font-size: 4rem;
+            color: var(--ok);
+            margin-bottom: 12px;
+        }
+        .success .msg {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .error {
+            color: var(--err);
+            padding: 12px;
+            background: #fef2f2;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-top: 12px;
+        }
+
+        .status {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-top: 12px;
+            text-align: center;
+            min-height: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card" id="card">
+    <!-- Вміст генерується JS -->
+    <div class="status">Завантаження…</div>
+</div>
+
+<script src="js/github-api.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   add.html
+   Сторінка для швидкого додавання відео з YouTube.
+   Приймає параметри ?url=...&title=...
+   Додає відео в розділ "Нерозподілені" обраного альбому.
+   ═══════════════════════════════════════════════════════════ */
+
+const ALBUMS = [
+    { id: 'judo',   title: 'Дзюдо' },
+    { id: 'master', title: 'Майстерня' },
+    { id: 'pobut',  title: 'Побут' }
+];
+
+const UNDISTRIBUTED = 'Нерозподілені';
+
+let videoUrl = '';
+let videoTitle = '';
+let selectedAlbum = null;
+
+/* ═══════════════════════════════════════════════════════════
+   УТИЛІТИ
+   ═══════════════════════════════════════════════════════════ */
+
+function getParam(name) {
+    return new URLSearchParams(location.search).get(name);
+}
+
+function extractYouTubeId(url) {
+    if (!url || typeof url !== 'string') return null;
+    let u = url.trim();
+    const patterns = [
+        /youtu\.be\/([A-Za-z0-9_-]{11})/,
+        /\/shorts\/([A-Za-z0-9_-]{11})/,
+        /\/embed\/([A-Za-z0-9_-]{11})/,
+        /\/live\/([A-Za-z0-9_-]{11})/,
+        /[?&]v=([A-Za-z0-9_-]{11})/
+    ];
+    for (const pat of patterns) {
+        const m = u.match(pat);
+        if (m) return m[1];
+    }
+    return null;
+}
+
+function setStatus(msg, isError = false) {
+    const el = document.querySelector('.status');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.style.color = isError ? 'var(--err)' : 'var(--muted)';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   РЕНДЕР
+   ═══════════════════════════════════════════════════════════ */
+
+function renderTokenForm() {
+    const card = document.getElementById('card');
+    card.innerHTML = `
+        <h1>Налаштування</h1>
+        <div class="token-form">
+            <label>
+                Для збереження відео потрібен токен GitHub.
+                Він зберігається тільки на цьому пристрої.
+            </label>
+            <input type="password" id="token-input"
+                   placeholder="ghp_..." autocomplete="off">
+            <button type="button" id="token-save">Зберегти токен</button>
+            <div class="status"></div>
+        </div>
+    `;
+
+    document.getElementById('token-save').addEventListener('click', async () => {
+        const token = document.getElementById('token-input').value.trim();
+        if (!token) {
+            setStatus('Введіть токен', true);
+            return;
+        }
+        setStatus('Перевірка…');
+        GitHubAPI.setToken(token);
+        const ok = await GitHubAPI.checkToken();
+        if (ok) {
+            setStatus('✅ Токен працює');
+            setTimeout(renderMain, 500);
+        } else {
+            GitHubAPI.forgetToken();
+            setStatus('❌ Токен невірний або немає прав', true);
+        }
+    });
+}
+
+function renderMain() {
+    const card = document.getElementById('card');
+    card.innerHTML = `
+        <h1 id="video-title"></h1>
+        <div class="albums" id="albums"></div>
+        <button type="button" class="save-btn" id="save-btn" disabled>
+            💾 Зберегти
+        </button>
+        <div class="status"></div>
+    `;
+
+    // Заголовок (назва відео)
+    const titleEl = document.getElementById('video-title');
+    titleEl.textContent = videoTitle || 'Нове відео';
+
+    // Кнопки альбомів
+    const albumsEl = document.getElementById('albums');
+    ALBUMS.forEach(album => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'album-btn';
+        btn.dataset.albumId = album.id;
+        btn.innerHTML = `
+            <span class="icon"></span>
+            <span>${album.title}</span>
+        `;
+        btn.addEventListener('click', () => {
+            selectedAlbum = album.id;
+            document.querySelectorAll('.album-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('save-btn').disabled = false;
+        });
+        albumsEl.appendChild(btn);
+    });
+
+    // Кнопка Зберегти
+    document.getElementById('save-btn').addEventListener('click', doSave);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ЗБЕРЕЖЕННЯ
+   ═══════════════════════════════════════════════════════════ */
+
+async function doSave() {
+    if (!selectedAlbum) return;
+
+    const saveBtn = document.getElementById('save-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = '💾 Збереження…';
+    setStatus('');
+
+    try {
+        const albumFile = selectedAlbum + '.json';
+        const repoPath = 'data/' + albumFile;
+
+        // 1. Читаємо поточний файл альбому
+        const existing = await GitHubAPI.readFile(repoPath);
+        let videos = existing ? JSON.parse(existing.content) : [];
+        if (!Array.isArray(videos)) videos = [];
+
+        // 2. Перевірка на дублікат
+        const newId = extractYouTubeId(videoUrl);
+        if (!newId) {
+            throw new Error('Некоректне посилання на YouTube');
+        }
+        const exists = videos.some(v => {
+            const vid = extractYouTubeId(v.url);
+            return vid && vid === newId;
+        });
+        if (exists) {
+            setStatus('⚠ Це відео вже є в каталозі', true);
+            saveBtn.disabled = false;
+            saveBtn.textContent = '💾 Зберегти';
+            return;
+        }
+
+        // 3. Додаємо відео в "Нерозподілені"
+        videos.push({
+            title: videoTitle || 'Без назви',
+            section: UNDISTRIBUTED,
+            url: 'https://www.youtube.com/watch?v=' + newId
+        });
+
+        // 4. Записуємо назад
+        const content = JSON.stringify(videos, null, 2);
+        await GitHubAPI.writeFile(repoPath, content, `Add video to ${albumFile}`);
+
+        // 5. Успіх
+        renderSuccess();
+
+    } catch (err) {
+        console.error(err);
+        setStatus('Помилка: ' + err.message, true);
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Спробувати ще';
+    }
+}
+
+function renderSuccess() {
+    const card = document.getElementById('card');
+    card.innerHTML = `
+        <div class="success">
+            <div class="check">✅</div>
+            <div class="msg">Збережено</div>
+        </div>
+    `;
+    setTimeout(() => {
+        // Спробувати закрити вікно (працює, якщо відкрито з "Поділитися")
+        window.close();
+        // Якщо не вдалось — повернутись на головну
+        setTimeout(() => {
+            location.href = 'index.html';
+        }, 500);
+    }, 2000);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   СТАРТ
+   ═══════════════════════════════════════════════════════════ */
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Читаємо параметри
+    videoUrl = getParam('url') || '';
+    videoTitle = getParam('title') || '';
+
+    // Якщо URL немає — показати повідомлення
+    if (!videoUrl) {
+        document.getElementById('card').innerHTML = `
+            <h1>Додати відео</h1>
+            <p style="color: var(--muted); line-height: 1.5;">
+                Ця сторінка призначена для додавання відео з YouTube.
+                Скористайтесь кнопкою "Поділитися" на відео, щоб відкрити її.
+            </p>
+        `;
+        return;
+    }
+
+    // Якщо токен є — показати основну форму
+    // Якщо ні — показати налаштування
+    if (GitHubAPI.hasToken()) {
+        // Перевіряємо токен асинхронно
+        GitHubAPI.checkToken().then(ok => {
+            if (ok) {
+                renderMain();
+            } else {
+                renderTokenForm();
+            }
+        });
+    } else {
+        renderTokenForm();
+    }
+});
+</script>
+</body>
+</html>
