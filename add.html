@@ -397,6 +397,17 @@ document.addEventListener('DOMContentLoaded', () => {
     videoUrl = getParam('url') || '';
     videoTitle = getParam('title') || '';
 
+    // Android передає все через "text": "URL Назва відео"
+    const textParam = getParam('text') || '';
+    if (textParam) {
+        // Перший токен — URL, решта — назва
+        const match = textParam.match(/^(https?:\/\/[^\s]+)\s*(.*)$/);
+        if (match) {
+            if (!videoUrl) videoUrl = match[1];
+            if (!videoTitle) videoTitle = match[2] || '';
+        }
+    }
+
     // Якщо URL немає — показати повідомлення
     if (!videoUrl) {
         document.getElementById('card').innerHTML = `
