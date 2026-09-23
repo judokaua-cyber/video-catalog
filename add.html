@@ -271,6 +271,18 @@ function renderTokenForm() {
     });
 }
 
+async function fetchVideoTitle(videoId) {
+    try {
+        const res = await fetch('https://noembed.com/embed?url=https://www.youtube.com/watch?v=' + videoId);
+        if (!res.ok) return '';
+        const data = await res.json();
+        return data.title || '';
+    } catch (e) {
+        console.warn('noembed error:', e);
+        return '';
+    }
+}
+    
 function renderMain() {
     const card = document.getElementById('card');
     card.innerHTML = `
@@ -284,6 +296,21 @@ function renderMain() {
 
     const titleEl = document.getElementById('video-title');
     titleEl.textContent = videoTitle || 'Завантаження назви…';
+
+        // Якщо назви немає — спробуємо отримати її через noembed
+    if (!videoTitle && videoUrl) {
+        const vid = extractYouTubeId(videoUrl);
+        if (vid) {
+            fetchVideoTitle(vid).then(title => {
+                if (title) {
+                    videoTitle = title;
+                    titleEl.textContent = title;
+                } else {
+                    titleEl.textContent = 'Без назви';
+                }
+            });
+        }
+    }
 
     const albumsEl = document.getElementById('albums');
     ALBUMS.forEach(album => {
