@@ -92,47 +92,64 @@ window.FileStorage = (function () {
      * @param {string} content  — вміст файлу
      * @returns {Promise<{saved: boolean, method: string, filename: string}>}
      */
-    async function save(filename, content) {
-        // Спроба через File System Access API
+       async function save(filename, content) {
+        const results = {
+            fs: false,
+            github: false,
+            download: false,
+            filename
+        };
+
+        // ─── 1. Спроба через File System Access API ───
         if (isSupported()) {
             if (!dirHandle) {
                 const ok = await pickFolder();
-                if (!ok) {
-                    // Користувач скасував вибір — падаємо на download
-                    downloadFallback(filename, content);
-                    return { saved: true, method: 'download', filename };
+                if (ok) {
+                    // продовжуємо нижче
                 }
             }
-
-            try {
-                // Перевіряємо дозвіл ще раз
-                const perm = await dirHandle.queryPermission({ mode: 'readwrite' });
-                if (perm !== 'granted') {
-                    const req = await dirHandle.requestPermission({ mode: 'readwrite' });
-                    if (req !== 'granted') {
-                        dirHandle = null;
-                        downloadFallback(filename, content);
-                        return { saved: true, method: 'download', filename };
+            if (dirHandle) {
+                try {
+                    const perm = await dirHandle.queryPermission({ mode: 'readwrite' });
+                    if (perm === 'granted' || (await dirHandle.requestPermission({ mode: 'readwrite' })) === 'granted') {
+                        const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(content);
+                        await writable.close();
+                        results.fs = true;
                     }
+                } catch (err) {
+                    console.error('FileStorage.save (FS):', err);
                 }
-
-                const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
-                const writable = await fileHandle.createWritable();
-                await writable.write(content);
-                await writable.close();
-
-                return { saved: true, method: 'fs', filename };
-            } catch (err) {
-                console.error('FileStorage.save (FS):', err);
-                // Якщо не вдалось — пробуємо через download
-                downloadFallback(filename, content);
-                return { saved: true, method: 'download', filename };
             }
         }
 
-        // API недоступний — звичайне завантаження
-        downloadFallback(filename, content);
-        return { saved: true, method: 'download', filename };
+        // ─── 2. Спроба через GitHub API ───
+        if (window.GitHubAPI && GitHubAPI.hasToken()) {
+            try {
+                // Визначаємо шлях у репозиторії
+                const repoPath = 'data/' + filename;
+                await GitHubAPI.writeFile(repoPath, content, `Update ${filename}`);
+                results.github = true;
+            } catch (err) {
+                console.error('FileStorage.save (GitHub):', err);
+            }
+        }
+
+        // ─── 3. Fallback: звичайне завантаження ───
+        if (!results.fs && !results.github) {
+            downloadFallback(filename, content);
+            results.download = true;
+        }
+
+        // Визначаємо "головний" метод для повідомлення
+        let method = 'none';
+        if (results.fs && results.github) method = 'both';
+        else if (results.fs) method = 'fs';
+        else if (results.github) method = 'github';
+        else if (results.download) method = 'download';
+
+        return { saved: true, method, filename, results };
     }
 
     /* ============================================================
