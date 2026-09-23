@@ -491,8 +491,12 @@ function showUnsavedHint() {
                 AlbumsStore.markClean();
                 banner.remove();
 
-                if (result.method === 'fs') {
+            if (result.method === 'both') {
+                    setStatus('✅ albums.json: записано локально та закомічено на GitHub.');
+                } else if (result.method === 'fs') {
                     setStatus('✅ albums.json збережено у вибрану теку.');
+                } else if (result.method === 'github') {
+                    setStatus('✅ albums.json закомічено на GitHub (локально не записано).');
                 } else {
                     setStatus('✅ albums.json завантажено в Downloads. Перетягніть його в data/.');
                 }
