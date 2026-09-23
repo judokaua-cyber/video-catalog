@@ -283,7 +283,7 @@ function renderMain() {
     `;
 
     const titleEl = document.getElementById('video-title');
-    titleEl.textContent = videoTitle || 'Нове відео';
+    titleEl.textContent = 'TEXT=[' + (getParam('text') || '') + ']';
 
     const albumsEl = document.getElementById('albums');
     ALBUMS.forEach(album => {
