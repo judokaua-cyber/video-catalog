@@ -583,7 +583,6 @@ function showUnsavedHint() {
                     const result = await VideosStore.save();
                 VideosStore.markClean();
 
-                alert('DEBUG: ' + JSON.stringify(result));
                 showUnsavedHint();
 
                 if (result.method === 'both') {
