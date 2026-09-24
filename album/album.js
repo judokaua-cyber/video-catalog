@@ -580,13 +580,13 @@ function showUnsavedHint() {
                     result = await AlbumsStore.save();
                     AlbumsStore.markClean();
                 } else {
-                    result = await VideosStore.save();
-                    VideosStore.markClean();
-                }
+                    const result = await VideosStore.save();
+                VideosStore.markClean();
 
+                alert('DEBUG: ' + JSON.stringify(result));
                 showUnsavedHint();
 
-            if (result.method === 'both') {
+                if (result.method === 'both') {
                     setStatus('✅ Записано локально та закомічено на GitHub.');
                 } else if (result.method === 'fs') {
                     setStatus('✅ Збережено у вибрану теку.');
