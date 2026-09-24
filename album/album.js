@@ -580,8 +580,9 @@ function showUnsavedHint() {
                     result = await AlbumsStore.save();
                     AlbumsStore.markClean();
                 } else {
-                    const result = await VideosStore.save();
-                VideosStore.markClean();
+                    result = await VideosStore.save();
+                    VideosStore.markClean();
+                }
 
                 showUnsavedHint();
 
