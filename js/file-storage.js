@@ -124,12 +124,14 @@ window.FileStorage = (function () {
             }
         }
 
-        // ─── 2. Спроба через GitHub API ───
+                // ─── 2. Спроба через GitHub API ───
         if (window.GitHubAPI && GitHubAPI.hasToken()) {
             try {
                 // Визначаємо шлях у репозиторії
                 const repoPath = 'data/' + filename;
-                await GitHubAPI.writeFile(repoPath, content, `Update ${filename}`);
+                console.log('[FileStorage] GitHub write:', repoPath, 'content length:', content.length);
+                const ghResult = await GitHubAPI.writeFile(repoPath, content, `Update ${filename}`);
+                console.log('[FileStorage] GitHub result:', ghResult);
                 results.github = true;
             } catch (err) {
                 console.error('FileStorage.save (GitHub):', err);
