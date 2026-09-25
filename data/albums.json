@@ -157,5 +157,13 @@
         "cover": ""
       }
     }
+  },
+  {
+    "id": "tsikave",
+    "title": "Цікаве",
+    "description": "",
+    "cover": "",
+    "file": "tsikave.json",
+    "sections": {}
   }
 ]
