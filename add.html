@@ -455,8 +455,8 @@ async function doSave() {
         const albumFile = selectedAlbum.file;
         const repoPath = 'data/' + albumFile;
 
-        const existing = await GitHubAPI.readFile(repoPath);
-        let videos = existing ? JSON.parse(existing.content) : [];
+        const existingText = await GitHubAPI.readFileViaFetch(repoPath);
+        let videos = existingText ? JSON.parse(existingText) : [];
         if (!Array.isArray(videos)) videos = [];
 
         const newId = extractYouTubeId(videoUrl);
