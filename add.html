@@ -314,9 +314,9 @@ async function renderAlbumsScreen() {
     // Читаємо список альбомів
     try {
         setStatus('Завантаження альбомів…');
-        const res = await GitHubAPI.readFile(ALBUMS_FILE);
-        if (!res) throw new Error('albums.json не знайдено');
-        albums = JSON.parse(res.content);
+        const text = await GitHubAPI.readFileViaFetch(ALBUMS_FILE);
+        if (!text) throw new Error('albums.json не знайдено');
+        albums = JSON.parse(text);
         if (!Array.isArray(albums)) albums = [];
     } catch (e) {
         setStatus('Помилка: ' + e.message, true);
