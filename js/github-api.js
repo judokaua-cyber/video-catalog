@@ -189,3 +189,4 @@ window.GitHubAPI = (function () {
         REPO,
         BRANCH
     };
+   })();
