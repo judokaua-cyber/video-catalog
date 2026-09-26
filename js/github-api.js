@@ -96,6 +96,24 @@ window.GitHubAPI = (function () {
     }
 
     /**
+     * Читає файл через звичайний fetch (не через GitHub API).
+     * Працює для будь-якого розміру файлу.
+     * @param {string} path — шлях від кореня сайту, напр. 'data/albums.json'
+     * @returns {Promise<string | null>}
+     */
+    async function readFileViaFetch(path) {
+        try {
+            const res = await fetch('/video-catalog/' + path, { cache: 'no-store' });
+            if (!res.ok) return null;
+            return await res.text();
+        } catch (e) {
+            console.error('GitHubAPI.readFileViaFetch:', e);
+            return null;
+        }
+    }
+
+   
+    /**
      * Записує файл у репозиторій (створює або оновлює).
      * @param {string} path — шлях від кореня, напр. 'data/albums.json'
      * @param {string} content — вміст файлу (текст)
