@@ -360,10 +360,10 @@ async function renderSectionsScreen() {
     // Читаємо файл альбому, щоб зібрати унікальні розділи
     try {
         setStatus('Завантаження розділів…');
-        const res = await GitHubAPI.readFile('data/' + selectedAlbum.file);
+        const text = await GitHubAPI.readFileViaFetch('data/' + selectedAlbum.file);
         let videos = [];
-        if (res) {
-            videos = JSON.parse(res.content);
+        if (text) {
+            videos = JSON.parse(text);
             if (!Array.isArray(videos)) videos = [];
         }
         sections = buildSections(videos);
