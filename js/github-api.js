@@ -176,16 +176,16 @@ window.GitHubAPI = (function () {
 
     // ═══════════════════════════════════════════════════════════
 
-    return {
+   return {
         hasToken,
         getToken,
         setToken,
         forgetToken,
         checkToken,
         readFile,
+        readFileViaFetch,
         writeFile,
         OWNER,
         REPO,
         BRANCH
     };
-})();
