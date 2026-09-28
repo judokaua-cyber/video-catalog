@@ -1,14 +1,13 @@
 /* section/section.js
-
-/* ============================================================
-   Логіка сторінки розділу: каталог відео
-   ============================================================ */
+   Логіка сторінки розділу: каталог відео + підрозділи.
+*/
 
 let currentAlbum = null;
 let currentSection = '';
-let allVideos = [];          // усі відео альбому (з VideosStore)
-let sectionVideos = [];      // тільки цього розділу (з індексами у VideosStore)
-let filteredVideos = [];     // після пошуку
+let currentSubsection = '';   // '' = огляд розділу
+let allVideos = [];           // усі відео альбому
+let sectionVideos = [];       // відео поточного розділу
+let filteredVideos = [];      // після пошуку/фільтра
 let currentQuery = '';
 let currentView = 'grid';
 
@@ -68,6 +67,7 @@ function escapeAttr(s) { return escapeHtml(s); }
 async function init() {
     const albumId = getParam('id');
     currentSection = getParam('name') || '';
+    currentSubsection = getParam('sub') || '';
 
     if (!albumId || !currentSection) {
         setStatus('Не вказано альбом або розділ.', true);
@@ -105,10 +105,6 @@ async function init() {
     setStatus('');
 }
 
-/**
- * Перебудовує sectionVideos з урахуванням поточного стану VideosStore.
- * Кожен запис: { video: {...}, index: N } — index у глобальному масиві.
- */
 function rebuildSectionVideos() {
     allVideos = VideosStore.getAll();
     sectionVideos = allVideos
@@ -123,28 +119,61 @@ function rebuildSectionVideos() {
 function applyMeta() {
     const secMeta = (currentAlbum.sections || {})[currentSection] || {};
 
-    document.title = `${currentSection} — ${currentAlbum.title}`;
+    const titleText = currentSubsection
+        ? `${currentSubsection} — ${currentSection}`
+        : currentSection;
+    document.title = `${titleText} — ${currentAlbum.title}`;
 
-    document.getElementById('section-title').textContent = currentSection;
-    document.getElementById('section-description').textContent = secMeta.description || '';
+    document.getElementById('section-title').textContent = titleText;
+    document.getElementById('section-description').textContent =
+        currentSubsection ? '' : (secMeta.description || '');
 
-    document.getElementById('crumb-album').textContent = currentAlbum.title;
-    document.getElementById('crumb-album').href =
+    // Хлібні крихти
+    const crumbAlbum = document.getElementById('crumb-album');
+    crumbAlbum.textContent = currentAlbum.title;
+    crumbAlbum.href =
         `../album/album.html?id=${encodeURIComponent(currentAlbum.id)}`;
-    document.getElementById('crumb-section').textContent = currentSection;
 
-    document.getElementById('footer-album-link').href =
-        `../album/album.html?id=${encodeURIComponent(currentAlbum.id)}`;
-    document.getElementById('footer-album-link').textContent =
-        `← До альбому «${currentAlbum.title}»`;
+    const crumbSection = document.getElementById('crumb-section');
+    if (currentSubsection) {
+        const sectionHref = `section.html?id=${encodeURIComponent(currentAlbum.id)}` +
+                            `&name=${encodeURIComponent(currentSection)}`;
+        crumbSection.outerHTML =
+            `<a id="crumb-section" href="${sectionHref}">${escapeHtml(currentSection)}</a>` +
+            `<span class="sep">›</span>` +
+            `<span class="current">${escapeHtml(currentSubsection)}</span>`;
+    } else {
+        crumbSection.textContent = currentSection;
+        crumbSection.className = 'current';
+    }
 
+    // Футер
+    const footer = document.getElementById('footer-album-link');
+    if (currentSubsection) {
+        footer.href = `section.html?id=${encodeURIComponent(currentAlbum.id)}` +
+                      `&name=${encodeURIComponent(currentSection)}`;
+        footer.textContent = `← До розділу «${currentSection}»`;
+    } else {
+        footer.href = `../album/album.html?id=${encodeURIComponent(currentAlbum.id)}`;
+        footer.textContent = `← До альбому «${currentAlbum.title}»`;
+    }
+
+    // Обкладинка
     const cover = document.getElementById('section-cover');
     cover.innerHTML = '';
     cover.classList.remove('placeholder');
 
-    let coverUrl = secMeta.cover || '';
-    if (!coverUrl && sectionVideos.length > 0) {
-        coverUrl = getThumbnail(sectionVideos[0].video.url);
+    let coverUrl = '';
+    if (currentSubsection) {
+        const first = sectionVideos.find(
+            it => (it.video.subsection || '') === currentSubsection
+        );
+        if (first) coverUrl = getThumbnail(first.video.url);
+    } else {
+        coverUrl = secMeta.cover || '';
+        if (!coverUrl && sectionVideos.length > 0) {
+            coverUrl = getThumbnail(sectionVideos[0].video.url);
+        }
     }
 
     if (coverUrl) {
@@ -152,14 +181,23 @@ function applyMeta() {
     } else {
         cover.style.backgroundImage = '';
         cover.classList.add('placeholder');
-        cover.textContent = currentSection.charAt(0).toUpperCase();
+        const letter = (currentSubsection || currentSection).charAt(0).toUpperCase();
+        cover.textContent = letter;
     }
 
     updateStats();
 }
 
 function updateStats() {
-    document.getElementById('stat-videos').textContent = sectionVideos.length;
+    let count;
+    if (currentSubsection) {
+        count = sectionVideos.filter(
+            it => (it.video.subsection || '') === currentSubsection
+        ).length;
+    } else {
+        count = sectionVideos.length;
+    }
+    document.getElementById('stat-videos').textContent = count;
 }
 
 /* ============================================================
@@ -238,24 +276,128 @@ function applyViewClass() {
    ============================================================ */
 
 function applyFilters() {
-    filteredVideos = sectionVideos.slice();
+    let base = sectionVideos.slice();
 
-    if (currentQuery) {
-        filteredVideos = filteredVideos.filter(item =>
-            (item.video.title || '').toLowerCase().includes(currentQuery)
+    if (currentSubsection) {
+        base = base.filter(
+            it => (it.video.subsection || '') === currentSubsection
         );
     }
 
-    renderVideos();
+    if (currentQuery) {
+        base = base.filter(it =>
+            (it.video.title || '').toLowerCase().includes(currentQuery)
+        );
+    }
+
+    filteredVideos = base;
+
+    if (currentSubsection || currentQuery) {
+        hideSubsectionsZone();
+        renderVideos();
+    } else {
+        renderOverview();
+    }
+
     toggleEmptyState();
 }
 
 function toggleEmptyState() {
     const empty = document.getElementById('empty-state');
     const grid = document.getElementById('video-grid');
-    empty.hidden = filteredVideos.length > 0;
-    grid.style.display = filteredVideos.length === 0 ? 'none' : '';
+    const hasAny = filteredVideos.length > 0;
+    empty.hidden = hasAny;
+    grid.style.display = hasAny ? '' : 'none';
 }
+
+/* ============================================================
+   ОГЛЯД РОЗДІЛУ: ПАПКИ ПІДРОЗДІЛІВ
+   ============================================================ */
+
+function hideSubsectionsZone() {
+    const zone = document.getElementById('subsections-zone');
+    if (zone) zone.remove();
+}
+
+function renderOverview() {
+    const catalog = document.querySelector('.catalog');
+    if (!catalog) return;
+
+    hideSubsectionsZone();
+
+    const grouped = VideosStore.getGroupedBySubsection(currentSection);
+
+    if (grouped.subsections.length === 0) {
+        filteredVideos = grouped.withoutSub.videos;
+        renderVideos();
+        return;
+    }
+
+    const zone = document.createElement('div');
+    zone.id = 'subsections-zone';
+    zone.className = 'subsections-zone';
+
+    const heading = document.createElement('h2');
+    heading.className = 'subsections-heading';
+    heading.textContent = '📁 Підрозділи';
+    zone.appendChild(heading);
+
+    const grid = document.createElement('div');
+    grid.className = 'subsections-grid';
+
+    grouped.subsections.forEach(sub => {
+        grid.appendChild(createSubsectionFolder(sub));
+    });
+
+    zone.appendChild(grid);
+    catalog.insertBefore(zone, catalog.firstChild);
+
+    filteredVideos = grouped.withoutSub.videos;
+    renderVideos();
+}
+
+function createSubsectionFolder(sub) {
+    const a = document.createElement('a');
+    a.className = 'subsection-folder';
+    a.href = `section.html?id=${encodeURIComponent(currentAlbum.id)}` +
+             `&name=${encodeURIComponent(currentSection)}` +
+             `&sub=${encodeURIComponent(sub.name)}`;
+
+    const thumb = sub.firstUrl ? getThumbnail(sub.firstUrl) : '';
+    const cover = document.createElement('div');
+    cover.className = 'subsection-folder-cover';
+    if (thumb) {
+        cover.style.backgroundImage = `url("${thumb}")`;
+    } else {
+        cover.classList.add('placeholder');
+        cover.textContent = '📁';
+    }
+
+    const badge = document.createElement('span');
+    badge.className = 'subsection-folder-count';
+    badge.textContent = sub.count;
+    cover.appendChild(badge);
+
+    const body = document.createElement('div');
+    body.className = 'subsection-folder-body';
+
+    const title = document.createElement('div');
+    title.className = 'subsection-folder-title';
+    title.textContent = sub.name;
+
+    const note = document.createElement('div');
+    note.className = 'subsection-folder-note';
+    note.textContent = 'підрозділ';
+
+    body.append(title, note);
+    a.append(cover, body);
+
+    return a;
+}
+
+/* ============================================================
+   СІТКА ВІДЕО
+   ============================================================ */
 
 function renderVideos() {
     const grid = document.getElementById('video-grid');
@@ -322,11 +464,17 @@ function createVideoCard(item) {
     const title = document.createElement('h3');
     title.className = 'video-title';
     title.textContent = video.title || 'Без назви';
-
     info.appendChild(title);
+
+    if (!currentSubsection && video.subsection) {
+        const badge = document.createElement('span');
+        badge.className = 'video-subsection-badge';
+        badge.textContent = '📁 ' + video.subsection;
+        info.appendChild(badge);
+    }
+
     card.appendChild(info);
 
-    // ПКМ — контекстне меню
     card.addEventListener('contextmenu', e => {
         e.preventDefault();
         openVideoMenu(e, item);
@@ -340,8 +488,6 @@ function createVideoCard(item) {
    ============================================================ */
 
 function openVideoMenu(e, item) {
-    const video = item.video;
-
     ContextCard.showMenu(e, [
         {
             icon: '✏️',
@@ -350,8 +496,13 @@ function openVideoMenu(e, item) {
         },
         {
             icon: '🔀',
-            label: 'Переміщення / Дублювання',
+            label: 'Переміщення / Дублювання в альбомі',
             onClick: () => openMoveDup(item)
+        },
+        {
+            icon: '📁',
+            label: 'Перемістити в підгрупу',
+            onClick: () => openSubsectionPicker(item)
         },
         '---',
         {
@@ -369,9 +520,12 @@ function openVideoMenu(e, item) {
 
 function openVideoEditor(item) {
     const video = item.video;
+
     const sections = [...new Set(
         VideosStore.getAll().map(v => v.section || 'Без розділу')
     )].sort((a, b) => a.localeCompare(b, 'uk'));
+
+    const subs = VideosStore.getSubsections(video.section || currentSection);
 
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
@@ -381,6 +535,13 @@ function openVideoEditor(item) {
     const sectionOptions = sections.map(s =>
         `<option value="${escapeAttr(s)}" ${s === (video.section || 'Без розділу') ? 'selected' : ''}>${escapeHtml(s)}</option>`
     ).join('');
+
+    const currentSub = video.subsection || '';
+    const subOptions = ['<option value="">— без підрозділу —</option>']
+        .concat(subs.map(s =>
+            `<option value="${escapeAttr(s.name)}" ${s.name === currentSub ? 'selected' : ''}>${escapeHtml(s.name)}</option>`
+        ))
+        .join('');
 
     const modal = document.createElement('div');
     modal.className = 'modal';
@@ -407,7 +568,17 @@ function openVideoEditor(item) {
                 <div class="modal-field">
                     <label for="vf-section">Розділ</label>
                     <select id="vf-section">${sectionOptions}</select>
-                    <small class="modal-hint">Зміна розділу перемістить відео.</small>
+                    <small class="modal-hint">Зміна розділу перемістить відео і скине підрозділ.</small>
+                </div>
+
+                <div class="modal-field">
+                    <label for="vf-subsection">Підрозділ</label>
+                    <select id="vf-subsection">${subOptions}</select>
+                    <div id="vf-sub-new-wrap" style="margin-top:8px;display:none">
+                        <input id="vf-sub-new" type="text"
+                               placeholder="Назва нового підрозділу">
+                    </div>
+                    <small class="modal-hint">Обрати наявний або створити новий.</small>
                 </div>
 
                 <div class="modal-actions">
@@ -425,11 +596,29 @@ function openVideoEditor(item) {
     const titleInput = modal.querySelector('#vf-title');
     const urlInput = modal.querySelector('#vf-url');
     const sectionSelect = modal.querySelector('#vf-section');
+    const subSelect = modal.querySelector('#vf-subsection');
+    const subNewWrap = modal.querySelector('#vf-sub-new-wrap');
+    const subNewInput = modal.querySelector('#vf-sub-new');
     const cancelBtn = modal.querySelector('#vf-cancel');
     const closeBtn = modal.querySelector('.modal-close');
 
     titleInput.value = video.title || '';
     urlInput.value = video.url || '';
+
+    const newOpt = document.createElement('option');
+    newOpt.value = '__new__';
+    newOpt.textContent = '➕ новий підрозділ…';
+    subSelect.appendChild(newOpt);
+
+    subSelect.addEventListener('change', () => {
+        if (subSelect.value === '__new__') {
+            subNewWrap.style.display = '';
+            subNewInput.focus();
+        } else {
+            subNewWrap.style.display = 'none';
+            subNewInput.value = '';
+        }
+    });
 
     function close() {
         overlay.remove();
@@ -451,6 +640,16 @@ function openVideoEditor(item) {
         const newTitle = titleInput.value.trim();
         const newUrl = urlInput.value.trim();
         const newSection = sectionSelect.value;
+        let newSub = subSelect.value;
+
+        if (newSub === '__new__') {
+            newSub = subNewInput.value.trim();
+            if (!newSub) {
+                alert('Введіть назву нового підрозділу.');
+                subNewInput.focus();
+                return;
+            }
+        }
 
         if (!newTitle) {
             titleInput.focus();
@@ -467,7 +666,8 @@ function openVideoEditor(item) {
         VideosStore.updateVideo(item.index, {
             title: newTitle,
             url: newUrl,
-            section: newSection
+            section: newSection,
+            subsection: newSub
         });
 
         close();
@@ -480,6 +680,7 @@ function openVideoEditor(item) {
 
         rebuildSectionVideos();
         updateStats();
+        applyMeta();
         applyFilters();
         showUnsavedHint();
     });
@@ -505,6 +706,26 @@ function openMoveDup(item) {
         }
     });
 }
+
+/* ============================================================
+   МОДАЛКА: ПЕРЕМІСТИТИ В ПІДГРУПУ
+   ============================================================ */
+
+function openSubsectionPicker(item) {
+    SubsectionPicker.open({
+        section: item.video.section || currentSection,
+        currentSubsection: item.video.subsection || '',
+        item: item,
+        onDone: () => {
+            rebuildSectionVideos();
+            updateStats();
+            applyMeta();
+            applyFilters();
+            showUnsavedHint();
+        }
+    });
+}
+
 /* ============================================================
    ДІЯ: ВИДАЛИТИ ВІДЕО
    ============================================================ */
@@ -558,8 +779,12 @@ function showUnsavedHint() {
             VideosStore.markClean();
             banner.remove();
 
-            if (result.method === 'fs') {
+            if (result.method === 'both') {
+                setStatus('✅ Записано локально та закомічено на GitHub.');
+            } else if (result.method === 'fs') {
                 setStatus('✅ Збережено у вибрану теку.');
+            } else if (result.method === 'github') {
+                setStatus('✅ Закомічено на GitHub (локально не записано).');
             } else {
                 setStatus('✅ Завантажено в Downloads. Перетягніть у data/.');
             }
