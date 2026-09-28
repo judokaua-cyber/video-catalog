@@ -140,6 +140,107 @@
 }
 
 /* ============================================================
+   ПІДРОЗДІЛИ (папки в огляді розділу)
+   ============================================================ */
+.subsections-zone {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px dashed #cbd5e1;
+}
+
+.subsections-heading {
+    margin: 0 0 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #475569;
+    letter-spacing: 0.02em;
+}
+
+.subsections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.subsection-folder {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+    cursor: pointer;
+}
+.subsection-folder:hover {
+    transform: translateY(-1px);
+    border-color: var(--primary, #2563eb);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.subsection-folder-cover {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    background: #e2e8f0 center/cover no-repeat;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    color: #64748b;
+}
+.subsection-folder-cover.placeholder {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+}
+
+.subsection-folder-count {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    background: #1e293b;
+    color: white;
+    border-radius: 999px;
+    padding: 1px 7px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border: 2px solid white;
+}
+
+.subsection-folder-body { min-width: 0; flex: 1; }
+.subsection-folder-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.subsection-folder-note {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+/* Бейдж підрозділу на картці відео (коли дивимось огляд) */
+.video-subsection-badge {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 0.72rem;
+    color: #475569;
+    background: #f1f5f9;
+    border-radius: 6px;
+    padding: 2px 8px;
+    align-self: flex-start;
+}
+
+/* ============================================================
    СІТКА ВІДЕО (grid)
    ============================================================ */
 .video-grid {
@@ -497,3 +598,21 @@
 }
 .md-toast.show { opacity: 1; transform: translate(-50%, 0); }
 .md-toast.error { background: #dc2626; color: #ffffff; }
+
+/* ==== SubsectionPicker (додаткові стилі) ==== */
+
+.md-card-special .md-card-letter {
+    background: linear-gradient(135deg, #64748b, #94a3b8);
+}
+
+.md-card-new-sub .md-card-cover-new {
+    background: #f8fafc;
+    border-bottom: 1px dashed #cbd5e1;
+}
+.md-card-plus {
+    font-size: 2.4rem;
+    font-weight: 300;
+    color: #94a3b8;
+    line-height: 1;
+}
+.md-card-new-sub:hover .md-card-plus { color: #2563eb; }
