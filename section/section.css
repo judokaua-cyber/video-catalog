@@ -265,6 +265,10 @@
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
+.video-card.is-selected {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.2), 0 8px 20px rgba(0,0,0,0.1);
+}
 
 .video-thumb {
     position: relative;
@@ -321,6 +325,7 @@
 }
 
 .video-info {
+    position: relative;
     padding: 12px 14px 14px;
     flex-grow: 1;
     display: flex;
@@ -332,11 +337,68 @@
     font-size: 0.95rem;
     font-weight: 600;
     line-height: 1.35;
+    padding-right: 72px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
+.video-card-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 4px;
+}
+.video-select,
+.video-menu-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #475569;
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.video-select:hover,
+.video-menu-button:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+    background: #eff6ff;
+}
+.video-select[aria-pressed="true"] {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.bulk-video-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    border: 1px solid #bfdbfe;
+    border-radius: 9px;
+    background: #eff6ff;
+}
+.bulk-video-actions[hidden] { display: none; }
+.bulk-video-count {
+    margin-right: auto;
+    color: #1e3a8a;
+    font-weight: 600;
+}
+.bulk-video-actions .btn { white-space: nowrap; }
 
 /* ============================================================
    СПИСОК (view-list)
@@ -367,6 +429,8 @@
     .video-grid.view-list .video-card { flex-direction: column; }
     .video-grid.view-list .video-thumb,
     .video-grid.view-list .video-iframe-wrap { width: 100%; }
+    .bulk-video-actions { justify-content: stretch; }
+    .bulk-video-actions .btn { flex: 1 1 100%; }
 }
 
 /* ============================================================

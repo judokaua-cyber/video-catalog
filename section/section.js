@@ -10,6 +10,7 @@ let sectionVideos = [];       // відео поточного розділу
 let filteredVideos = [];      // після пошуку/фільтра
 let currentQuery = '';
 let currentView = 'grid';
+const selectedVideoIndices = new Set();
 
 /* ============================================================
    СТАТУС
@@ -100,6 +101,7 @@ async function init() {
     applyMeta();
     setupSearch();
     setupViewToggle();
+    setupBulkActions();
     applyFilters();
 
     setStatus('');
@@ -408,6 +410,7 @@ function renderVideos() {
         fragment.appendChild(createVideoCard(item));
     });
     grid.appendChild(fragment);
+    updateBulkActions();
 }
 
 /* ============================================================
@@ -419,6 +422,7 @@ function createVideoCard(item) {
     const card = document.createElement('div');
     card.className = 'video-card';
     card.dataset.index = item.index;
+    card.classList.toggle('is-selected', selectedVideoIndices.has(item.index));
 
     const embedUrl = getEmbedUrl(video.url);
     const thumbUrl = getThumbnail(video.url);
@@ -435,7 +439,14 @@ function createVideoCard(item) {
         play.textContent = '▶';
         thumbBtn.appendChild(play);
 
-        thumbBtn.addEventListener('click', () => {
+        thumbBtn.addEventListener('click', e => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleVideoSelection(item.index);
+                return;
+            }
+
             const wrap = document.createElement('div');
             wrap.className = 'video-iframe-wrap';
 
@@ -446,7 +457,7 @@ function createVideoCard(item) {
 
             wrap.appendChild(iframe);
             card.replaceChild(wrap, thumbBtn);
-        }, { once: true });
+        });
 
         card.appendChild(thumbBtn);
     } else {
@@ -464,7 +475,36 @@ function createVideoCard(item) {
     const title = document.createElement('h3');
     title.className = 'video-title';
     title.textContent = video.title || 'Без назви';
-    info.appendChild(title);
+
+    const actions = document.createElement('div');
+    actions.className = 'video-card-actions';
+
+    const selectBtn = document.createElement('button');
+    selectBtn.type = 'button';
+    selectBtn.className = 'video-select';
+    selectBtn.title = 'Натисніть або Ctrl+Click картку, щоб вибрати відео';
+    selectBtn.setAttribute('aria-pressed', String(selectedVideoIndices.has(item.index)));
+    selectBtn.setAttribute('aria-label', selectedVideoIndices.has(item.index)
+        ? 'Скасувати вибір відео'
+        : 'Вибрати відео для групового переміщення');
+    selectBtn.textContent = selectedVideoIndices.has(item.index) ? '✓' : '□';
+    selectBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        toggleVideoSelection(item.index);
+    });
+
+    const menuBtn = document.createElement('button');
+    menuBtn.type = 'button';
+    menuBtn.className = 'video-menu-button';
+    menuBtn.textContent = '⋮';
+    menuBtn.setAttribute('aria-label', 'Меню відео: ' + (video.title || 'Без назви'));
+    menuBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        openVideoMenu(e, item);
+    });
+
+    actions.append(selectBtn, menuBtn);
+    info.append(title, actions);
 
     if (!currentSubsection && video.subsection) {
         const badge = document.createElement('span');
@@ -479,8 +519,116 @@ function createVideoCard(item) {
         e.preventDefault();
         openVideoMenu(e, item);
     });
+    card.addEventListener('click', e => {
+        if (!e.ctrlKey || e.target.closest('button')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        toggleVideoSelection(item.index);
+    });
 
     return card;
+}
+
+function setupBulkActions() {
+    const catalog = document.querySelector('.catalog');
+    const grid = document.getElementById('video-grid');
+    if (!catalog || !grid || document.getElementById('bulk-video-actions')) return;
+
+    const toolbar = document.createElement('div');
+    toolbar.id = 'bulk-video-actions';
+    toolbar.className = 'bulk-video-actions';
+
+    const count = document.createElement('span');
+    count.className = 'bulk-video-count';
+    count.setAttribute('aria-live', 'polite');
+
+    const moveBtn = document.createElement('button');
+    moveBtn.type = 'button';
+    moveBtn.className = 'btn';
+    moveBtn.textContent = '📁 Перемістити вибране в підрозділ';
+    moveBtn.hidden = true;
+    moveBtn.addEventListener('click', openBulkSubsectionPicker);
+
+    const clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = 'btn secondary';
+    clearBtn.textContent = 'Скасувати вибір';
+    clearBtn.hidden = true;
+    clearBtn.addEventListener('click', clearVideoSelection);
+
+    toolbar.append(count, moveBtn, clearBtn);
+    catalog.insertBefore(toolbar, grid);
+    updateBulkActions();
+}
+
+function toggleVideoSelection(index) {
+    if (selectedVideoIndices.has(index)) selectedVideoIndices.delete(index);
+    else selectedVideoIndices.add(index);
+
+    const card = document.querySelector(`.video-card[data-index="${index}"]`);
+    if (card) {
+        const selected = selectedVideoIndices.has(index);
+        card.classList.toggle('is-selected', selected);
+        const button = card.querySelector('.video-select');
+        if (button) {
+            button.textContent = selected ? '✓' : '□';
+            button.setAttribute('aria-pressed', String(selected));
+            button.setAttribute('aria-label', selected
+                ? 'Скасувати вибір відео'
+                : 'Вибрати відео для групового переміщення');
+        }
+    }
+    updateBulkActions();
+}
+
+function clearVideoSelection() {
+    selectedVideoIndices.clear();
+    document.querySelectorAll('.video-card.is-selected').forEach(card => {
+        card.classList.remove('is-selected');
+        const button = card.querySelector('.video-select');
+        if (button) {
+            button.textContent = '□';
+            button.setAttribute('aria-pressed', 'false');
+            button.setAttribute('aria-label', 'Вибрати відео для групового переміщення');
+        }
+    });
+    updateBulkActions();
+}
+
+function updateBulkActions() {
+    const toolbar = document.getElementById('bulk-video-actions');
+    if (!toolbar) return;
+    const count = toolbar.querySelector('.bulk-video-count');
+    const hasSelection = selectedVideoIndices.size > 0;
+    count.textContent = hasSelection
+        ? `Вибрано відео: ${selectedVideoIndices.size}`
+        : 'Ctrl+Click картки або натисніть □, щоб вибрати відео';
+    toolbar.querySelector('.btn').hidden = !hasSelection;
+    toolbar.querySelector('.btn.secondary').hidden = !hasSelection;
+}
+
+function openBulkSubsectionPicker() {
+    const items = [...selectedVideoIndices]
+        .map(index => ({ video: VideosStore.getAll()[index], index }))
+        .filter(item => item.video);
+
+    if (!items.length) {
+        clearVideoSelection();
+        return;
+    }
+
+    SubsectionPicker.open({
+        section: currentSection,
+        items,
+        onDone: () => {
+            clearVideoSelection();
+            rebuildSectionVideos();
+            updateStats();
+            applyMeta();
+            applyFilters();
+            showUnsavedHint();
+        }
+    });
 }
 
 /* ============================================================
@@ -693,6 +841,7 @@ function openVideoEditor(item) {
    ============================================================ */
 
 function openMoveDup(item) {
+    clearVideoSelection();
     MoveDup.open({
         album: currentAlbum,
         currentSection: currentSection,
@@ -741,6 +890,11 @@ async function removeVideo(item) {
     if (!ok) return;
 
     VideosStore.removeVideo(item.index);
+    const remainingSelections = [...selectedVideoIndices]
+        .filter(index => index !== item.index)
+        .map(index => index > item.index ? index - 1 : index);
+    selectedVideoIndices.clear();
+    remainingSelections.forEach(index => selectedVideoIndices.add(index));
 
     rebuildSectionVideos();
     updateStats();

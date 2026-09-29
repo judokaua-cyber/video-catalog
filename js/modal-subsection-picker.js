@@ -2,7 +2,7 @@
    Модалка "Перемістити в підгрупу".
    Показує підрозділи ПОТОЧНОГО розділу + картку "без підрозділу"
    + картку "Створити новий підрозділ".
-   Виклик: SubsectionPicker.open({ section, currentSubsection, item, onDone })
+   Виклик: SubsectionPicker.open({ section, currentSubsection, item/items, onDone })
 */
 
 window.SubsectionPicker = (function () {
@@ -57,15 +57,20 @@ window.SubsectionPicker = (function () {
     /* ---------------- ВІДКРИТТЯ ---------------- */
 
     function open(opts) {
-        if (!opts || !opts.section || !opts.item) {
+        const items = opts && (Array.isArray(opts.items) ? opts.items : [opts.item]);
+        if (!opts || !opts.section || !items.length ||
+            items.some(item => !item || !item.video || !Number.isInteger(item.index))) {
             toast('Помилка: немає даних для переміщення', true);
             return;
         }
 
         state = {
             section: opts.section,
-            currentSubsection: opts.currentSubsection || '',
-            item: opts.item,
+            currentSubsection: items.every(function (item) {
+                return (item.video.subsection || '') ===
+                    (items[0].video.subsection || '');
+            }) ? (items[0].video.subsection || '') : null,
+            items,
             onDone: (typeof opts.onDone === 'function') ? opts.onDone : function () {},
             step: 1,
             targetSubsection: null,
@@ -308,15 +313,24 @@ window.SubsectionPicker = (function () {
     function renderStepConfirm(container) {
         var target = state.targetSubsection;
         var label = target || '(без підрозділу)';
-        var videoTitle = (state.item.video && state.item.video.title) || 'без назви';
+        var movingCount = state.items.filter(function (item) {
+            return (item.video.subsection || '') !== target;
+        }).length;
+        var videoLabel = state.items.length === 1
+            ? 'Відео: <b>' +
+              escapeHtml((state.items[0].video && state.items[0].video.title) || 'без назви') +
+              '</b><br>'
+            : 'Вибрано відео: <b>' + state.items.length + '</b><br>';
 
         container.innerHTML =
             '<p class="md-hint">' +
-                'Відео: <b>' + escapeHtml(videoTitle) + '</b><br>' +
+                videoLabel +
                 'Цільовий підрозділ: <b>' + escapeHtml(label) + '</b>' +
             '</p>' +
             '<div class="md-actions">' +
-                '<button type="button" class="btn" id="sp-move">📁 Перемістити</button>' +
+                '<button type="button" class="btn" id="sp-move">📁 Перемістити' +
+                    (state.items.length > 1 ? ' ' + movingCount + ' відео' : '') +
+                '</button>' +
             '</div>' +
             '<div class="modal-actions">' +
                 '<button type="button" class="btn secondary" id="sp-back">← Назад</button>' +
@@ -331,7 +345,9 @@ window.SubsectionPicker = (function () {
         container.querySelector('#sp-cancel').addEventListener('click', function () {
             closeOverlay();
         });
-        container.querySelector('#sp-move').addEventListener('click', doMove);
+        var moveButton = container.querySelector('#sp-move');
+        moveButton.disabled = movingCount === 0;
+        moveButton.addEventListener('click', doMove);
     }
 
     /* ---------------- ДІЯ ---------------- */
@@ -339,25 +355,40 @@ window.SubsectionPicker = (function () {
     function doMove() {
         if (!state) return;
 
-        var item = state.item;
         var target = state.targetSubsection || '';
-        var current = state.currentSubsection || '';
-
-        if (target === current) {
-            toast('Відео вже в цьому підрозділі', true);
+        var allVideos = VideosStore.getAll();
+        var uniqueIndices = new Set(state.items.map(function (item) { return item.index; }));
+        if (uniqueIndices.size !== state.items.length || state.items.some(function (item) {
+            var video = allVideos[item.index];
+            return !video || (video.section || 'Без розділу') !== state.section;
+        })) {
+            toast('Список відео змінився. Закрийте вікно та виберіть картки знову.', true);
             return;
         }
 
-        var ok = VideosStore.moveVideoToSubsection(item.index, target);
-        if (!ok) {
+        var itemsToMove = state.items.filter(function (item) {
+            return (allVideos[item.index].subsection || '') !== target;
+        });
+        if (!itemsToMove.length) {
+            toast(state.items.length === 1
+                ? 'Відео вже в цьому підрозділі'
+                : 'Усі вибрані відео вже в цьому підрозділі', true);
+            return;
+        }
+
+        var moved = 0;
+        itemsToMove.forEach(function (item) {
+            if (VideosStore.moveVideoToSubsection(item.index, target)) moved++;
+        });
+        if (!moved) {
             toast('Не вдалось перемістити', true);
             return;
         }
 
-        var title = (item.video && item.video.title) || 'відео';
         var label = target || '(без підрозділу)';
         finish();
-        toast('«' + title + '» → «' + label + '»');
+        toast((moved === 1 ? 'Відео переміщено' : 'Переміщено відео: ' + moved) +
+              ' → «' + label + '»');
     }
 
     function finish() {
