@@ -760,31 +760,171 @@
 ├── manual.html         ← цей посібник
 └── ...</div>
 
-        <h3>Правильний цикл роботи</h3>
+ <h3>Правильний цикл роботи</h3>
 
-        <ol>
-            <li>
-                <strong>Стягнути свіже з GitHub:</strong>
-                <div class="scheme">git pull</div>
-                Робіть це <strong>перед кожним редагуванням</strong>.
-            </li>
-            <li>
-                Внести зміни у файли (через PyCharm або через Telegram-скрипт).
-            </li>
-            <li>
-                <strong>Закомітити:</strong>
-                <div class="scheme">git add .
-git commit -m "Опис зміни"</div>
-            </li>
-            <li>
-                <strong>Запушити:</strong>
-                <div class="scheme">git push</div>
-            </li>
-            <li>
-                Через 30 секунд оновити сайт і перевірити з
-                <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>.
-            </li>
-        </ol>
+<ol>
+    <li>
+        <strong>Стягнути свіже з GitHub:</strong>
+        <div class="scheme">git pull</div>
+        Робіть це <strong>перед кожним редагуванням</strong>.
+    </li>
+    <li>
+        Внести зміни у файли (через PyCharm або через Telegram-скрипт).
+    </li>
+    <li>
+        <strong>Закомітити</strong> ті файли, які ви змінили.
+    </li>
+    <li>
+        <strong>Запушити:</strong>
+        <div class="scheme">git push</div>
+    </li>
+    <li>
+        Через 30 секунд оновити сайт і перевірити з
+        <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>.
+    </li>
+</ol>
+
+<h3>Що саме писати в <code>git add</code></h3>
+
+<p>
+    Команда <code>git add</code> вказує, які файли будуть включені
+    в наступний коміт. Є три типові варіанти:
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Команда</th>
+            <th>Що робить</th>
+            <th>Коли використовувати</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>git add &lt;файл&gt;</code></td>
+            <td>Додає <strong>один конкретний</strong> файл.</td>
+            <td>Коли змінили щось одне й хочете закомітити саме його.</td>
+        </tr>
+        <tr>
+            <td><code>git add .</code></td>
+            <td>Додає <strong>усі</strong> змінені й нові файли
+                в поточній теці.</td>
+            <td>Коли ви впевнені, що всі зміни — потрібні.</td>
+        </tr>
+        <tr>
+            <td><code>git add data/</code></td>
+            <td>Додає <strong>усі</strong> змінені файли в теці
+                <code>data/</code>.</td>
+            <td>Коли змінили кілька JSON-файлів.</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="warn">
+    <strong>Обережно з <code>git add .</code></strong>
+    Ця команда додає <strong>усі</strong> змінені файли — включно
+    з тими, які ви, можливо, не хотіли комітити (наприклад,
+    тимчасові тестові файли, конфіги PyCharm тощо). Якщо сумніваєтесь —
+    спочатку виконайте <code>git status</code>, подивіться список,
+    і додавайте файли по одному.
+</div>
+
+<h3>Приклад 1. Додали новий файл</h3>
+
+<p>
+    Ви створили новий файл <code>developer_notes.html</code> у корені
+    робочої теки <code>C:\Users\Kodak\PycharmProjects\video-catalog\</code>.
+</p>
+
+<p>У PyCharm Terminal виконайте по черзі:</p>
+
+<div class="scheme">git pull
+git add developer_notes.html
+git commit -m "Add developer notes"
+git push</div>
+
+<h3>Приклад 2. Оновили дані альбому</h3>
+
+<p>
+    Ви додали кілька відео вручну в <code>data/judo.json</code> і
+    <code>data/master.json</code>.
+</p>
+
+<div class="scheme">git pull
+git add data/judo.json data/master.json
+git commit -m "Update judo and master videos"
+git push</div>
+
+<h3>Приклад 3. Змінили кілька файлів коду</h3>
+
+<p>
+    Ви поправили <code>section/section.js</code>,
+    <code>section/section.css</code> і додали новий
+    <code>js/modal-subsection-picker.js</code>.
+</p>
+
+<div class="scheme">git pull
+git add section/section.js
+git add section/section.css
+git add js/modal-subsection-picker.js
+git commit -m "Add subsection picker"
+git push</div>
+
+<p>
+    Або, якщо ви впевнені, що всі зміни — потрібні, одним рядком:
+</p>
+
+<div class="scheme">git pull
+git add .
+git commit -m "Add subsection picker"
+git push</div>
+
+<h3>Як перевірити, що саме буде закомічено</h3>
+
+<p>
+    Перед <code>git add</code> виконайте:
+</p>
+
+<div class="scheme">git status</div>
+
+<p>
+    Побачите приблизно таке:
+</p>
+
+<div class="scheme">On branch main
+Changes not staged for commit:
+  modified:   data/judo.json
+  modified:   section/section.js
+
+Untracked files:
+  developer_notes.html</div>
+
+<p>
+    <strong>modified</strong> — файли, які вже є в git, але ви
+    їх змінили. <strong>Untracked</strong> — нові файли, яких
+    git ще не знає. Обидві категорії можна додавати через
+    <code>git add</code>.
+</p>
+
+<h3>Повідомлення коміту</h3>
+
+<p>
+    У <code>-m "..."</code> пишіть коротко, що саме змінилось.
+    Гарні приклади:
+</p>
+
+<ul>
+    <li><code>"Add developer notes"</code></li>
+    <li><code>"Fix album counters cache"</code></li>
+    <li><code>"Update judo: 43 new videos"</code></li>
+    <li><code>"Rewrite manual: split user/admin"</code></li>
+</ul>
+
+<p>
+    Погані приклади — <code>"fix"</code>, <code>"update"</code>,
+    <code>"1"</code>. Через місяць ви не згадаєте, що це було.
+</p>
+
 
         <h3>Через GUI PyCharm</h3>
 
