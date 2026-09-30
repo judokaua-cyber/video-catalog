@@ -60,7 +60,7 @@ async function createAlbumCard(album) {
     let sectionCount = 0;
 
     try {
-        const res = await fetch(DATA_BASE + album.file);
+        const res = await fetch(DATA_BASE + album.file, { cache: 'no-store' });
         if (res.ok) {
             const data = await res.json();
             videoCount = Array.isArray(data) ? data.length : 0;
