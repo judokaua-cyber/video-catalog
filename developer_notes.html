@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Notes — Video Catalog</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --border: #334155;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --ok: #4ade80;
+            --warn: #fbbf24;
+            --err: #f87171;
+            --code-bg: #0b1220;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        header {
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            padding: 20px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header h1 {
+            margin: 0 0 6px;
+            font-size: 1.15rem;
+            color: var(--accent);
+        }
+        header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        header a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        header a:hover { text-decoration: underline; }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; padding: 16px; }
+            nav.toc { position: static; max-height: none; }
+        }
+
+        nav.toc {
+            position: sticky;
+            top: 90px;
+            align-self: start;
+            max-height: calc(100vh - 110px);
+            overflow-y: auto;
+            font-size: 0.8rem;
+        }
+        nav.toc h3 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin: 16px 0 6px;
+        }
+        nav.toc h3:first-child { margin-top: 0; }
+        nav.toc a {
+            display: block;
+            padding: 3px 8px;
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 4px;
+            border-left: 2px solid transparent;
+        }
+        nav.toc a:hover {
+            background: var(--panel);
+            border-left-color: var(--accent);
+            color: var(--accent);
+        }
+
+        main {
+            background: var(--panel);
+            border-radius: 8px;
+            padding: 28px 32px;
+            border: 1px solid var(--border);
+            min-width: 0;
+        }
+
+        main h2 {
+            font-size: 1.15rem;
+            margin: 32px 0 12px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            color: var(--accent);
+            scroll-margin-top: 80px;
+        }
+        main h2:first-child {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+        main h3 {
+            font-size: 0.98rem;
+            margin: 22px 0 8px;
+            color: var(--ok);
+            scroll-margin-top: 80px;
+        }
+        main h4 {
+            font-size: 0.88rem;
+            margin: 16px 0 6px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            scroll-margin-top: 80px;
+        }
+        main p, main li { line-height: 1.55; }
+        main ul, main ol { padding-left: 20px; }
+        main li { margin: 3px 0; }
+
+        main code {
+            background: var(--code-bg);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: 0.92em;
+            color: var(--warn);
+        }
+        main pre {
+            background: var(--code-bg);
+            padding: 14px 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            border: 1px solid var(--border);
+            margin: 10px 0;
+        }
+        main pre code {
+            background: none;
+            padding: 0;
+            color: var(--text);
+        }
+
+        main a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        main a:hover { text-decoration: underline; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 0.82rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        th {
+            background: var(--code-bg);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+        }
+        tr:last-child td { border-bottom: none; }
+
+        .note, .warn, .err, .ok {
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin: 12px 0;
+            border-left: 3px solid;
+            font-size: 0.85rem;
+        }
+        .note { background: rgba(56,189,248,0.08); border-color: var(--accent); }
+        .warn { background: rgba(251,191,36,0.08); border-color: var(--warn); }
+        .err  { background: rgba(248,113,113,0.08); border-color: var(--err); }
+        .ok   { background: rgba(74,222,128,0.08); border-color: var(--ok); }
+        .note strong, .warn strong, .err strong, .ok strong {
+            display: block;
+            margin-bottom: 3px;
+            color: inherit;
+        }
+
+        .scheme {
+            background: var(--code-bg);
+            padding: 14px 18px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            white-space: pre;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            margin: 12px 0;
+            color: var(--muted);
+        }
+
+        kbd {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-bottom-width: 2px;
+            border-radius: 3px;
+            padding: 0 5px;
+            font-family: inherit;
+            font-size: 0.85em;
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Developer Notes — Video Catalog</h1>
+    <p>
+        Технічна документація для розробника / ШІ-асистента ·
+        <a href="index.html">index.html</a> ·
+        <a href="manual.html">manual.html</a> ·
+        <a href="manual_editing.html">manual_editing.html</a>
+    </p>
+</header>
+
+<div class="layout">
+
+    <nav class="toc">
+        <h3>Огляд</h3>
+        <a href="#summary">Резюме проєкту</a>
+        <a href="#stack">Стек технологій</a>
+        <a href="#tree">Дерево файлів</a>
+
+        <h3>Дані</h3>
+        <a href="#data-albums">albums.json</a>
+        <a href="#data-videos">album.json</a>
+        <a href="#data-rules">Правила даних</a>
+
+        <h3>Модулі JS</h3>
+        <a href="#js-store-albums">store-albums.js</a>
+        <a href="#js-store-videos">store-videos.js</a>
+        <a href="#js-file-storage">file-storage.js</a>
+        <a href="#js-github-api">github-api.js</a>
+        <a href="#js-modal">modal.js</a>
+        <a href="#js-context-card">context-card.js</a>
+        <a href="#js-move-dup">modal-move-dup.js</a>
+        <a href="#js-subsection">modal-subsection-picker.js</a>
+
+        <h3>Сторінки</h3>
+        <a href="#page-index">index.html</a>
+        <a href="#page-album">album.html</a>
+        <a href="#page-section">section.html</a>
+        <a href="#page-add">add.html</a>
+
+        <h3>Скрипти</h3>
+        <a href="#py-telegram">telegram_to_json.py</a>
+        <a href="#py-zoho">zoho_to_json.py (архів)</a>
+
+        <h3>Операції</h3>
+        <a href="#flow-save">Потік збереження</a>
+        <a href="#flow-subsection">Потік підрозділів</a>
+        <a href="#flow-bulk">Групове переміщення</a>
+        <a href="#flow-token">Токен GitHub</a>
+
+        <h3>Проблеми</h3>
+        <a href="#pitfalls">Відомі граблі</a>
+        <a href="#cache">Кеш</a>
+        <a href="#unicode">Unicode-очищення</a>
+
+        <h3>Довідка</h3>
+        <a href="#consts">Константи та URL</a>
+        <a href="#conventions">Угоди коду</a>
+    </nav>
+
+    <main>
+
+        <h2 id="summary">Резюме проєкту</h2>
+
+        <p>
+            <strong>Video Catalog</strong> — статичний веб-сайт для каталогізації
+            YouTube-відео. Без серверної частини, без бази даних, без API-ключа
+            YouTube. Усі дані — JSON-файли в теці <code>data/</code>. Хостинг —
+            GitHub Pages.
+        </p>
+
+        <table>
+            <tbody>
+                <tr>
+                    <td>Репозиторій</td>
+                    <td><code>github.com/judokaua-cyber/video-catalog</code></td>
+                </tr>
+                <tr>
+                    <td>Live URL</td>
+                    <td><code>https://judokaua-cyber.github.io/video-catalog/</code></td>
+                </tr>
+                <tr>
+                    <td>Гілка</td>
+                    <td><code>main</code></td>
+                </tr>
+                <tr>
+                    <td>Локальна тека</td>
+                    <td><code>C:\Users\Kodak\PycharmProjects\video-catalog\</code></td>
+                </tr>
+                <tr>
+                    <td>Власник</td>
+                    <td><code>judokaua-cyber &lt;judoka.ua@gmail.com&gt;</code></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="stack">Стек технологій</h2>
+
+        <ul>
+            <li>HTML5 + CSS3 (без фреймворків)</li>
+            <li>Vanilla JavaScript (ES2020+), без збирача</li>
+            <li>GitHub Pages (хостинг, автодеплой із <code>main</code>)</li>
+            <li>GitHub REST API v3 (для запису з браузера)</li>
+            <li>File System Access API (Chrome/Edge, для запису в теку)</li>
+            <li>Python 3 (стандартна бібліотека, без залежностей) — для скриптів імпорту</li>
+        </ul>
+
+        <p>
+            <strong>Немає:</strong> Node.js, npm, webpack, React, Vue, будь-якого
+            серверного коду. Усе працює як статичні файли.
+        </p>
+
+        <h2 id="tree">Дерево файлів</h2>
+
+        <div class="scheme">video-catalog/
+├── index.html              ← Головна: каталог альбомів
+├── index.js                ← Логіка головної
+├── index.css               ← Стилі головної
+├── styles.css              ← Базові стилі (спільні)
+├── manual.html             ← Посібник для користувача і адміністратора
+├── manual_editing.html     ← Покрокова інструкція редагування JSON
+├── developer_notes.html    ← ЦЕЙ ФАЙЛ (тех. документація)
+├── add.html                ← Сторінка додавання відео (share target)
+├── manifest.json           ← PWA-манифест
+├── sw.js                   ← Service Worker (мінімальний)
+├── telegram_to_json.py     ← Масовий імпорт з Telegram
+├── import_telegram.bat     ← Запускач для скрипта
+├── README.txt              ← Інструкція до Telegram-скрипта
+│
+├── album/
+│   ├── album.html          ← Каталог розділів одного альбому
+│   ├── album.js
+│   └── album.css
+│
+├── section/
+│   ├── section.html        ← Каталог відео одного розділу + підрозділи
+│   ├── section.js
+│   └── section.css
+│
+├── css/
+│   ├── context-card.css    ← Картки + ПКМ-меню
+│   └── modal.css           ← Модальні вікна
+│
+├── js/
+│   ├── store-albums.js
+│   ├── store-videos.js
+│   ├── file-storage.js
+│   ├── github-api.js
+│   ├── modal.js
+│   ├── context-card.js
+│   ├── modal-move-dup.js
+│   └── modal-subsection-picker.js
+│
+├── icons/
+│   ├── icon-192.png
+│   └── icon-512.png
+│
+└── data/
+    ├── albums.json         ← Індекс альбомів (Base64-обкладинки)
+    ├── judo.json
+    ├── master.json
+    ├── pobut.json
+    └── ...                 ← інші альбоми</div>
+
+        <h2 id="data-albums">albums.json</h2>
+
+        <p>
+            Масив об'єктів. Індекс усіх альбомів. Може бути великим (у цьому
+            проєкті — 3.9 МБ через Base64-обкладинки).
+        </p>
+
+        <pre><code>[
+  {
+    "id": "judo",
+    "title": "Дзюдо",
+    "description": "Техніка, кидки, захвати, рандорі",
+    "cover": "data:image/webp;base64,UklGR...",
+    "file": "judo.json",
+    "sections": {
+      "JUDO": {
+        "description": "",
+        "cover": "data:image/webp;base64,..."
+      },
+      "Kuzushi": {
+        "description": "",
+        "cover": ""
+      }
+    }
+  }
+]</code></pre>
+
+        <h4>Поля</h4>
+        <table>
+            <tbody>
+                <tr>
+                    <td><code>id</code></td>
+                    <td>Унікальний ID. Генерується з назви (транслітерація + дефіси).</td>
+                </tr>
+                <tr>
+                    <td><code>title</code></td>
+                    <td>Назва для людей.</td>
+                </tr>
+                <tr>
+                    <td><code>description</code></td>
+                    <td>Короткий опис.</td>
+                </tr>
+                <tr>
+                    <td><code>cover</code></td>
+                    <td>Base64 data URL обкладинки або <code>""</code>.</td>
+                </tr>
+                <tr>
+                    <td><code>file</code></td>
+                    <td>Ім'я файлу з відео (у теці <code>data/</code>).</td>
+                </tr>
+                <tr>
+                    <td><code>sections</code></td>
+                    <td>Об'єкт: ключ = назва розділу, значення = <code>{description, cover}</code>.
+                        <strong>Не впливає</strong> на перелік розділів —
+                        вони обчислюються з відео. Тут лише мета (обкладинка й опис).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="warn">
+            <strong>Важливо</strong>
+            <code>sections</code> не визначає, які розділи є. Розділи
+            визначаються з поля <code>section</code> у файлі
+            <code>&lt;album&gt;.json</code>. Якщо розділ є у відео, але немає
+            в <code>sections</code> — розділ з'явиться без обкладинки й опису.
+        </div>
+
+        <h2 id="data-videos">album.json</h2>
+
+        <p>
+            Масив відео одного альбому. Ім'я файлу — значення поля
+            <code>file</code> з <code>albums.json</code>.
+        </p>
+
+        <pre><code>[
+  {
+    "title": "Basic Ouchi gari",
+    "section": "Зачеп",
+    "subsection": "Зачеп ззовні",
+    "url": "https://www.youtube.com/watch?v=e-CtiY2RLwA"
+  },
+  {
+    "title": "Uchi Mata",
+    "section": "Зачеп",
+    "url": "https://www.youtube.com/watch?v=9bZkp7q19f0"
+  }
+]</code></pre>
+
+        <h4>Поля</h4>
+        <table>
+            <tbody>
+                <tr>
+                    <td><code>title</code></td>
+                    <td>Обов'язкове. Назва відео.</td>
+                </tr>
+                <tr>
+                    <td><code>section</code></td>
+                    <td>Обов'язкове. Назва розділу. Якщо порожнє — <code>"Без розділу"</code>.</td>
+                </tr>
+                <tr>
+                    <td><code>subsection</code></td>
+                    <td><strong>Необов'язкове.</strong> Якщо немає — відео «без підрозділу».
+                        Не записується як <code>""</code>, просто не додається в об'єкт.</td>
+                </tr>
+                <tr>
+                    <td><code>url</code></td>
+                    <td>Обов'язкове. YouTube-посилання у будь-якому форматі.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="data-rules">Правила даних</h2>
+
+        <ol>
+            <li>
+                <strong>Розділи та підрозділи не зберігаються окремо.</strong>
+                Вони обчислюються з масиву відео при кожному завантаженні
+                сторінки. Порожній розділ або підрозділ не існує.
+            </li>
+            <li>
+                <strong>Дедуплікація.</strong> Ключ унікальності відео — пара
+                <code>(url, section, subsection)</code>. Одне й те саме відео
+                може бути в різних розділах або підрозділах, але не двічі в
+                одному.
+            </li>
+            <li>
+                <strong>Нормалізація URL.</strong> Усі формати YouTube
+                перетворюються на <code>https://www.youtube.com/watch?v=ID</code>
+                під час парсингу. У файлі може бути будь-який формат — сайт
+                нормалізує при відображенні.
+            </li>
+            <li>
+                <strong>Порядок відео.</strong> Відео відображаються в тому
+                порядку, у якому вони у файлі. Сортування не застосовується
+                (крім підрозділів — за алфавітом).
+            </li>
+            <li>
+                <strong>Регістр.</strong> Розділи й підрозділи чутливі до
+                регістру: <code>"Зачеп"</code> і <code>"зачеп"</code> — різні.
+            </li>
+        </ol>
+
+        <h2 id="js-store-albums">store-albums.js</h2>
+
+        <p>
+            Єдине джерело правди для <code>albums.json</code>. Тримає стан
+            у пам'яті, позначає «брудні» зміни, вміє зберігати.
+        </p>
+
+        <h4>Публічне API</h4>
+        <table>
+            <tbody>
+                <tr><td><code>load()</code></td><td>Завантажує <code>albums.json</code> через fetch (path <code>/video-catalog/data/albums.json</code>, <code>cache: 'no-store'</code>).</td></tr>
+                <tr><td><code>getAll()</code></td><td>Копія масиву альбомів.</td></tr>
+                <tr><td><code>getById(id)</code></td><td>Знайти альбом за ID.</td></tr>
+                <tr><td><code>add(data)</code></td><td>Додати новий альбом. Автогенерація ID.</td></tr>
+                <tr><td><code>update(id, patch)</code></td><td>Оновити поля альбому.</td></tr>
+                <tr><td><code>remove(id)</code></td><td>Видалити альбом з індексу (файл <code>&lt;album&gt;.json</code> залишається).</td></tr>
+                <tr><td><code>isDirty()</code></td><td>Чи є незбережені зміни.</td></tr>
+                <tr><td><code>exportJson()</code></td><td>JSON-рядок усього масиву (indent 2).</td></tr>
+                <tr><td><code>save()</code></td><td>Виклик <code>FileStorage.save('albums.json', ...)</code>.</td></tr>
+                <tr><td><code>markClean()</code></td><td>Скинути прапорець dirty.</td></tr>
+                <tr><td><code>generateId(title)</code></td><td>Транслітерація + дефіси.</td></tr>
+                <tr><td><code>transliterate(str)</code></td><td>Українська/російська → латиниця.</td></tr>
+            </tbody>
+        </table>
+
+        <h2 id="js-store-videos">store-videos.js</h2>
+
+        <p>
+            Робота з файлом відео конкретного альбому. Завантажує, тримає в
+            пам'яті, дозволяє змінювати, знає про підрозділи.
+        </p>
+
+        <h4>Публічне API</h4>
+        <table>
+            <tbody>
+                <tr><td><code>load(albumFile)</code></td><td>Fetch <code>/video-catalog/data/&lt;albumFile&gt;</code> з <code>cache: 'no-store'</code>.</td></tr>
+                <tr><td><code>getAll()</code></td><td>Копія масиву відео.</td></tr>
+                <tr><td><code>getSections()</code></td><td>Унікальні розділи + count. Повертає <code>[{name, count}]</code>, сортовані за алфавітом.</td></tr>
+                <tr><td><code>getSubsections(sectionName)</code></td><td>Унікальні підрозділи в межах розділу (порожні ігноруються).</td></tr>
+                <tr><td><code>getGroupedBySubsection(sectionName)</code></td><td>Об'єкт <code>{subsections: [{name, count, firstUrl}], withoutSub: {count, videos}}</code>.</td></tr>
+                <tr><td><code>getByIndex(index)</code></td><td>Копія відео за індексом.</td></tr>
+                <tr><td><code>renameSection(old, new)</code></td><td>Перейменувати розділ у всіх відео.</td></tr>
+                <tr><td><code>removeSection(name)</code></td><td>Видалити всі відео розділу.</td></tr>
+                <tr><td><code>renameSubsection(section, old, new)</code></td><td>Перейменувати підрозділ. <code>new === ""</code> — прибрати.</td></tr>
+                <tr><td><code>removeSubsection(section, sub)</code></td><td>Те саме, що rename на <code>""</code>.</td></tr>
+                <tr><td><code>addVideo({title, section, subsection, url})</code></td><td>Додати в кінець.</td></tr>
+                <tr><td><code>insertVideo(index, video)</code></td><td>Вставити в позицію.</td></tr>
+                <tr><td><code>updateVideo(index, patch)</code></td><td>Оновити поля. Якщо <code>subsection</code> у patch порожній — видаляє поле.</td></tr>
+                <tr><td><code>moveVideo(index, newSection)</code></td><td>Змінити розділ. <strong>Скидає</strong> subsection, бо він належав старому розділу.</td></tr>
+                <tr><td><code>moveVideoToSubsection(index, sub)</code></td><td>Перемістити в підрозділ. <code>""</code> — прибрати.</td></tr>
+                <tr><td><code>removeVideo(index)</code></td><td>Видалити.</td></tr>
+                <tr><td><code>isDirty()</code>, <code>markClean()</code></td><td>Стан.</td></tr>
+                <tr><td><code>exportJson()</code></td><td>JSON-рядок.</td></tr>
+                <tr><td><code>save()</code></td><td><code>FileStorage.save(filename, ...)</code>.</td></tr>
+                <tr><td><code>filename</code> (getter)</td><td>Поточне ім'я файлу.</td></tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <strong>Правило збереження subsection</strong>
+            Поле <code>subsection</code> <strong>не записується</strong> в JSON,
+            якщо воно порожнє. У <code>updateVideo</code> явно видаляється
+            ключ при передачі <code>""</code>. Це важливо для сумісності
+            зі старими файлами, де поля немає взагалі.
+        </div>
+
+        <h2 id="js-file-storage">file-storage.js</h2>
+
+        <p>
+            Абстракція над трьома способами збереження. Спроби в порядку:
+            File System Access → GitHub API → Downloads.
+        </p>
+
+        <h4>Публічне API</h4>
+        <table>
+            <tbody>
+                <tr><td><code>isSupported()</code></td><td>Чи є <code>showDirectoryPicker</code>.</td></tr>
+                <tr><td><code>hasFolder()</code></td><td>Чи вибрана тека.</td></tr>
+                <tr><td><code>getFolderName()</code></td><td>Назва вибраної теки (або з localStorage).</td></tr>
+                <tr><td><code>pickFolder()</code></td><td>Діалог вибору теки.</td></tr>
+                <tr><td><code>forget()</code></td><td>Забути теку.</td></tr>
+                <tr><td><code>save(filename, content)</code></td><td>Повертає <code>{saved, method, filename, results}</code>. <code>method</code>: <code>both</code>, <code>fs</code>, <code>github</code>, <code>download</code>, <code>none</code>.</td></tr>
+                <tr><td><code>downloadFallback(filename, content)</code></td><td>Завантаження через Blob + <code>&lt;a download&gt;</code>.</td></tr>
+            </tbody>
+        </table>
+
+        <h2 id="js-github-api">github-api.js</h2>
+
+        <p>
+            Робота з GitHub REST API. Токен у <code>localStorage</code> під
+            ключем <code>GitHubAPI.token</code>.
+        </p>
+
+        <h4>Константи</h4>
+        <pre><code>OWNER  = 'judokaua-cyber'
+REPO   = 'video-catalog'
+BRANCH = 'main'</code></pre>
+
+        <h4>Публічне API</h4>
+        <table>
+            <tbody>
+                <tr><td><code>hasToken()</code></td><td>true/false.</td></tr>
+                <tr><td><code>getToken()</code></td><td>Рядок токена.</td></tr>
+                <tr><td><code>setToken(token)</code></td><td><strong>Один аргумент.</strong> Зберігає з <code>.trim()</code>.</td></tr>
+                <tr><td><code>forgetToken()</code></td><td>Видалити з localStorage.</td></tr>
+                <tr><td><code>checkToken()</code></td><td>GET <code>/repos/OWNER/REPO</code>. Повертає true/false. <strong>Ненадійний для публічних репо</strong> — може повернути true навіть із невалідним токеном, бо читання публічне.</td></tr>
+                <tr><td><code>readFile(path)</code></td><td>GET <code>/contents/&lt;path&gt;</code>. Повертає <code>{content, sha}</code> або <code>null</code> при 404.</td></tr>
+                <tr><td><code>readFileViaFetch(path)</code></td><td>Звичайний fetch <code>/video-catalog/&lt;path&gt;</code>. Працює для файлів &gt; 1 МБ.</td></tr>
+                <tr><td><code>writeFile(path, content, message)</code></td><td>PUT. Використовує <code>readFile</code> для отримання sha. Повертає <code>{sha}</code>.</td></tr>
+            </tbody>
+        </table>
+
+        <div class="warn">
+            <strong>Обмеження GitHub Contents API</strong>
+            <code>readFile</code> не працює для файлів &gt; 1 МБ — GitHub
+            відмовляє або повертає обрізаний вміст. Для <code>albums.json</code>
+            (3.9 МБ) тому використовується <code>readFileViaFetch</code>. Але
+            <code>writeFile</code> усе одно викликає <code>readFile</code> для
+            отримання sha — для файлів &gt; 1 МБ це може зламати запис.
+        </div>
+
+        <h2 id="js-modal">modal.js</h2>
+
+        <p>Прості модальні вікна: форма та підтвердження.</p>
+
+        <table>
+            <tbody>
+                <tr><td><code>open({title, fields, submitLabel, onSubmit})</code></td><td>Форма з полями. <code>fields</code>: масив <code>{name, label, type, value, placeholder, hint, required, rows}</code>. <code>onSubmit(values)</code> викликається при сабміті; якщо поверне <code>false</code> — модалка не закриється.</td></tr>
+                <tr><td><code>confirm({title, message, okLabel})</code></td><td>Promise&lt;boolean&gt;.</td></tr>
+            </tbody>
+        </table>
+
+        <h2 id="js-context-card">context-card.js</h2>
+
+        <p>Створення карток і контекстного меню (ПКМ).</p>
+
+        <table>
+            <tbody>
+                <tr><td><code>create(opts)</code></td><td><code>opts</code>: <code>{title, description, cover, placeholderLetter, count, href, menuItems, accent}</code>. <code>accent</code>: <code>blue</code>, <code>green</code>, <code>purple</code>, <code>gray</code>.</td></tr>
+                <tr><td><code>createNew({label, onClick, accent})</code></td><td>Картка «＋ Новий…».</td></tr>
+                <tr><td><code>showMenu(e, items)</code></td><td><code>items</code>: масив <code>{icon, label, danger, disabled, onClick}</code> або рядок <code>'---'</code> для розділювача.</td></tr>
+                <tr><td><code>closeMenu()</code></td><td>Закрити активне меню.</td></tr>
+            </tbody>
+        </table>
+
+        <h2 id="js-move-dup">modal-move-dup.js</h2>
+
+        <p>Модалка переміщення / дублювання відео між розділами одного альбому.</p>
+
+        <table>
+            <tbody>
+                <tr><td><code>open({album, currentSection, item, onDone})</code></td><td><code>item</code> = <code>{video, index}</code>. Двоступенева логіка: спочатку вибір розділу, потім дія (перемістити / дублювати).</td></tr>
+            </tbody>
+        </table>
+
+        <h2 id="js-subsection">modal-subsection-picker.js</h2>
+
+        <p>Модалка вибору підрозділу для одного відео або для групи (bulk).</p>
+
+        <table>
+            <tbody>
+                <tr><td><code>open({section, currentSubsection, item, onDone})</code></td><td>Одне відео. <code>item</code> = <code>{video, index}</code>.</td></tr>
+                <tr><td><code>open({section, currentSubsection, items, onDone})</code></td><td><code>items</code> — масив <code>{video, index}</code> для групового переміщення.</td></tr>
+            </tbody>
+        </table>
+
+        <p>Структура UI: сітка карток підрозділів + картка «(без підрозділу)» + картка «➕ Новий підрозділ…» + підтвердження.</p>
+
+        <h2 id="page-index">index.html</h2>
+
+        <p>Головна сторінка. Каталог альбомів.</p>
+
+        <ul>
+            <li>Рендерить картки альбомів через <code>ContextCard.create()</code>.</li>
+            <li>Лічильники (розділів і відео) рахуються <strong>окремо</strong> через прямий fetch <code>&lt;album&gt;.json</code> з <code>cache: 'no-store'</code>.</li>
+            <li>ПКМ на картці альбому відкриває меню: Відкрити, Редагувати, Завантажити JSON, Додати посилання, Видалити.</li>
+        </ul>
+
+        <div class="note">
+            <strong>Виправлення кешу</strong>
+            У <code>createAlbumCard()</code> обов'язково <code>fetch(DATA_BASE + album.file, { cache: 'no-store' })</code>,
+            інакше лічильники на головній показують старі цифри.
+        </div>
+
+        <h2 id="page-album">album.html + album.js</h2>
+
+        <ul>
+            <li>URL: <code>album.html?id=&lt;albumId&gt;</code>.</li>
+            <li>Завантажує <code>albums.json</code> → знаходить альбом → завантажує <code>&lt;album&gt;.json</code>.</li>
+            <li>Рендерить картки розділів через <code>VideosStore.getSections()</code>.</li>
+            <li>Створення / редагування розділів: <code>openSectionEditor()</code> — кастомна модалка (обкладинка через Base64).</li>
+            <li>ПКМ на розділі: Відкрити, Редагувати, Додати відео, Видалити.</li>
+            <li>«＋ Новий розділ» — <code>ContextCard.createNew()</code>.</li>
+        </ul>
+
+        <h2 id="page-section">section.html + section.js</h2>
+
+        <p>Найскладніша сторінка. Три режими відображення:</p>
+
+        <ol>
+            <li>
+                <strong>Огляд розділу</strong> (URL без <code>sub</code>):
+                зверху папки підрозділів, знизу картки відео без підрозділу.
+            </li>
+            <li>
+                <strong>Перегляд підрозділу</strong> (URL з <code>sub=...</code>):
+                тільки відео цього підрозділу.
+            </li>
+            <li>
+                <strong>Пошук</strong> (query непорожній): плоский список
+                відфільтрованих відео.
+            </li>
+        </ol>
+
+        <h4>Ключові функції</h4>
+        <table>
+            <tbody>
+                <tr><td><code>init()</code></td><td>Читає параметри, вантажить дані, викликає setup*.</td></tr>
+                <tr><td><code>rebuildSectionVideos()</code></td><td>Фільтрує <code>allVideos</code> за <code>currentSection</code>.</td></tr>
+                <tr><td><code>applyFilters()</code></td><td>Вирішує, що показати: огляд чи сітку.</td></tr>
+                <tr><td><code>renderOverview()</code></td><td>Малює зону підрозділів + картки «без підрозділу».</td></tr>
+                <tr><td><code>createSubsectionFolder(sub)</code></td><td>Картка-папка з прев'ю першого відео.</td></tr>
+                <tr><td><code>createVideoCard(item)</code></td><td>Картка з ПКМ, кнопкою ⋮, кнопкою □ (для групового виділення).</td></tr>
+                <tr><td><code>openVideoMenu(e, item)</code></td><td>ПКМ-меню з 4 пунктів.</td></tr>
+                <tr><td><code>openVideoEditor(item)</code></td><td>Модалка з полями title/url/section/subsection.</td></tr>
+                <tr><td><code>openMoveDup(item)</code></td><td>Виклик <code>MoveDup.open()</code>.</td></tr>
+                <tr><td><code>openSubsectionPicker(item)</code></td><td>Виклик <code>SubsectionPicker.open()</code>.</td></tr>
+            </tbody>
+        </table>
+
+        <h4>Параметри URL</h4>
+        <table>
+            <tbody>
+                <tr><td><code>id</code></td><td>ID альбому (обов'язково).</td></tr>
+                <tr><td><code>name</code></td><td>Назва розділу (обов'язково).</td></tr>
+                <tr><td><code>sub</code></td><td>Назва підрозділу (необов'язково).</td></tr>
+            </tbody>
+        </table>
+
+        <h2 id="page-add">add.html</h2>
+
+        <p>Сторінка share target (для PWA) і bookmarklet. Параметри URL:</p>
+
+        <table>
+            <tbody>
+                <tr><td><code>url</code></td><td>URL відео.</td></tr>
+                <tr><td><code>title</code></td><td>Назва.</td></tr>
+                <tr><td><code>text</code></td><td>Альтернатива: <code>url + title</code> в одному рядку.</td></tr>
+            </tbody>
+        </table>
+
+        <p>Логіка: токен → вибір альбому → вибір розділу → запис. Використовує <code>GitHubAPI.writeFile()</code>.</p>
+
+        <h2 id="py-telegram">telegram_to_json.py</h2>
+
+        <p>Масовий імпорт YouTube-посилань з експорту Telegram Desktop.</p>
+
+        <h4>Потік</h4>
+        <ol>
+            <li>Шукає найновішу підтеку <code>ChatExport_*</code> у
+                <code>C:\Users\Kodak\Downloads\Telegram Desktop\</code>.</li>
+            <li>Читає <code>result.json</code>, витягує URL з
+                <code>text</code> і <code>text_entities</code>.</li>
+            <li>Дедуплікує в межах експорту.</li>
+            <li>Тягне назви через <code>noembed.com</code> (пауза 0.3 с).</li>
+            <li>Очищає назви через <code>clean_title()</code>.</li>
+            <li>Питає альбом, розділ, підрозділ.</li>
+            <li>Дедуплікує за <code>(url, section, subsection)</code>.</li>
+            <li>Дописує у <code>data/&lt;album&gt;.json</code>.</li>
+            <li>Питає <code>y/n</code> на push. Якщо так — <code>git add/commit/push</code>.</li>
+        </ol>
+
+        <h4>Функція clean_title</h4>
+        <p>Прибирає:</p>
+        <ul>
+            <li>Емодзі-блоки: <code>U+1F000–U+1FAFF</code>, <code>U+2600–U+27BF</code>, <code>U+2B00–U+2BFF</code>, <code>U+1F1E6–U+1F1FF</code> (прапори), <code>U+20E3</code>.</li>
+            <li>Варіаційні селектори: <code>U+FE00–U+FE0F</code>.</li>
+            <li>Приховані: <code>U+200B, U+200C, U+200D, U+2060, U+180E, U+FEFF, U+2028, U+2029, U+00A0</code>.</li>
+            <li>Керуючі: <code>U+0000–U+001F</code>, <code>U+007F</code>.</li>
+            <li>Стискає подвійні пробіли.</li>
+        </ul>
+
+        <h4>Залежності</h4>
+        <p>Тільки стандартна бібліотека Python 3. Без зовнішніх пакетів.</p>
+
+        <h4>Конфігурація</h4>
+        <pre><code>REPO_DIR = r"C:\Users\Kodak\PycharmProjects\video-catalog"
+TELEGRAM_DESKTOP_DIR = r"C:\Users\Kodak\Downloads\Telegram Desktop"</code></pre>
+
+        <h2 id="py-zoho">zoho_to_json.py (архів)</h2>
+
+        <p>
+            Одноразовий скрипт для імпорту з Zoho Notebook. Більше не
+            використовується. Зберігся в репозиторії як історичний артефакт.
+            Якщо знадобиться — дивитися в історії git або в
+            <code>Zoho_convert/</code>.
+        </p>
+
+        <h2 id="flow-save">Потік збереження</h2>
+
+        <div class="scheme">Користувач змінює дані
+    ↓
+VideosStore / AlbumsStore: dirty = true
+    ↓
+showUnsavedHint() малює банер
+    ↓
+Клік «💾 Зберегти»
+    ↓
+FileStorage.save(filename, content)
+    ↓
+┌─ File System Access API (Chrome/Edge) ──────┐
+│  dirHandle отримано раніше → пише файл      │
+└─────────────────────────────────────────────┘
+    ↓ паралельно
+┌─ GitHub API ────────────────────────────────┐
+│  GitHubAPI.writeFile('data/' + filename, …) │
+│  → PUT /contents/data/&lt;file&gt;                │
+└─────────────────────────────────────────────┘
+    ↓ якщо обидва впали
+┌─ Downloads ─────────────────────────────────┐
+│  Blob + <a download>                        │
+└─────────────────────────────────────────────┘
+    ↓
+markClean() → банер зникає
+    ↓
+Повідомлення з method: 'both' | 'fs' | 'github' | 'download'</div>
+
+        <h2 id="flow-subsection">Потік підрозділів</h2>
+
+        <h4>Створення підрозділу (через UI)</h4>
+        <ol>
+            <li>ПКМ на картці відео → «📁 Перемістити в підгрупу».</li>
+            <li><code>SubsectionPicker.open({section, currentSubsection, item, onDone})</code>.</li>
+            <li>Клік «➕ Новий підрозділ…» → <code>showNewSubInput()</code>.</li>
+            <li>Введення назви → <code>state.targetSubsection = name</code>.</li>
+            <li>Крок 2: підтвердження → <code>VideosStore.moveVideoToSubsection(index, name)</code>.</li>
+            <li><code>dirty = true</code>.</li>
+            <li><code>onDone()</code> → <code>rebuildSectionVideos()</code>, <code>applyFilters()</code>, <code>showUnsavedHint()</code>.</li>
+        </ol>
+
+        <h4>Огляд розділу з підрозділами</h4>
+        <ol>
+            <li><code>applyFilters()</code> бачить, що <code>currentSubsection === ''</code>.</li>
+            <li>Викликає <code>renderOverview()</code>.</li>
+            <li><code>VideosStore.getGroupedBySubsection(section)</code> повертає
+                <code>{subsections, withoutSub}</code>.</li>
+            <li>Якщо <code>subsections.length &gt; 0</code> — малює зону
+                <code>#subsections-zone</code> з картками-папками.</li>
+            <li>Під папками — картки відео без підрозділу.</li>
+        </ol>
+
+        <h4>Перехід у підрозділ</h4>
+        <ol>
+            <li>Клік на папці → URL <code>section.html?id=…&amp;name=…&amp;sub=…</code>.</li>
+            <li><code>init()</code> читає <code>sub</code> → <code>currentSubsection</code>.</li>
+            <li><code>applyMeta()</code> додає хлібні крихти й замінює
+                заголовок.</li>
+            <li><code>applyFilters()</code> фільтрує відео за
+                <code>subsection</code>.</li>
+        </ol>
+
+        <h2 id="flow-bulk">Групове переміщення</h2>
+
+        <ol>
+            <li>Ctrl+Click на картці → <code>selectedIndexes.add(index)</code>.</li>
+            <li>Візуально — клас <code>.is-selected</code> (синя рамка).</li>
+            <li>ПКМ на одній із виділених → пункт «📁 Перемістити вибране (N)».</li>
+            <li><code>SubsectionPicker.open({section, items: [...]})</code>.</li>
+            <li>Вибір цільового підрозділу → <code>for (item of items) moveVideoToSubsection(item.index, target)</code>.</li>
+            <li><code>onDone()</code> → перемалювання + <code>showUnsavedHint()</code>.</li>
+        </ol>
+
+        <div class="note">
+            <strong>Обмеження</strong>
+            Ctrl+Click по активному iframe не спрацьовує (плеєр перехоплює
+            клік). Для таких карток використовується кнопка □ — окремий
+            елемент поза iframe.
+        </div>
+
+        <h2 id="flow-token">Токен GitHub</h2>
+
+        <h4>Введення</h4>
+        <pre><code>GitHubAPI.setToken('ghp_xxxxxxxxxxxx')   // один аргумент!</code></pre>
+
+        <h4>Перевірка</h4>
+        <pre><code>GitHubAPI.hasToken()          // → true/false
+await GitHubAPI.checkToken()  // → true/false (ненадійний для публічних)</code></pre>
+
+        <h4>Реальний тест</h4>
+        <pre><code>await GitHubAPI.writeFile('data/judo.json', '[]', 'Test')</code></pre>
+
+        <h4>Коди помилок GitHub</h4>
+        <table>
+            <tbody>
+                <tr><td><code>401 Bad credentials</code></td><td>Токен невалідний, прострочений або переданий неправильно.</td></tr>
+                <tr><td><code>403 Forbidden</code></td><td>Токен без scope <code>repo</code>, або репозиторій захищений.</td></tr>
+                <tr><td><code>404 Not Found</code></td><td>Файл або шлях не існує; або токен без доступу.</td></tr>
+                <tr><td><code>409 Conflict</code></td><td>Конфлікт sha — файл змінився на GitHub між read і write.</td></tr>
+                <tr><td><code>422 Unprocessable</code></td><td>Неправильний payload (наприклад, битий JSON).</td></tr>
+            </tbody>
+        </table>
+
+        <div class="err">
+            <strong>Типова пастка</strong>
+            <code>setToken('github_token', 'ghp_...')</code> — <strong>два
+            аргументи</strong>. Функція бере лише перший. У localStorage
+            запишеться рядок <code>'github_token'</code>, а не справжній токен.
+            Потім <code>hasToken()</code> повертатиме <code>true</code>, а
+            <code>writeFile</code> — <code>401</code>. Причина довго
+            неочевидна.
+        </div>
+
+        <h2 id="pitfalls">Відомі граблі</h2>
+
+        <h4>1. 404 при fetch, 200 при прямому запиті</h4>
+        <p>
+            Service Worker або HTTP-кеш можуть перехоплювати
+            <code>VideosStore.load()</code> і віддавати стару відповідь.
+            Перевірка: <code>navigator.serviceWorker.getRegistrations()</code>
+            і <code>caches.keys()</code>. Рішення — Unregister + Clear storage.
+        </p>
+
+        <h4>2. Шлях без <code>/video-catalog/</code></h4>
+        <p>
+            Якщо fetch використовує відносний шлях <code>data/…</code>, то
+            на GitHub Pages він резолвиться від кореня домену
+            (<code>judokaua-cyber.github.io/data/…</code>) — і дає 404. Треба
+            <strong>абсолютний</strong> <code>/video-catalog/data/…</code>.
+        </p>
+
+        <h4>3. Кеш лічильників на головній</h4>
+        <p>
+            Без <code>cache: 'no-store'</code> у fetch лічильники показують
+            старі цифри після оновлення файлу альбому. Завжди додавати
+            <code>{ cache: 'no-store' }</code>.
+        </p>
+
+        <h4>4. GitHub Contents API &gt; 1 МБ</h4>
+        <p>
+            <code>readFile</code> не працює для <code>albums.json</code>
+            (3.9 МБ). Для читання — <code>readFileViaFetch</code>. Для запису
+            потрібен інший підхід (Git Data API) або обмеження розміру.
+        </p>
+
+        <h4>5. Плутанина judo.json ↔ master.json</h4>
+        <p>
+            Якщо відкрити <code>section.html?id=master</code> і викликати
+            вручну <code>GitHubAPI.writeFile('data/judo.json',
+            VideosStore.exportJson(), '…')</code> — <code>VideosStore</code>
+            містить <code>master</code>, і він запишеться в
+            <code>judo.json</code>. <strong>Перезапис.</strong>
+        </p>
+
+        <h4>6. Різний регістр у назві розділу</h4>
+        <p>
+            <code>Зачеп</code> і <code>зачеп</code> — два різних розділи.
+            Ключі <code>(url, section, subsection)</code> не збігаються.
+            Завжди перевіряти регістр при імпорті з Telegram.
+        </p>
+
+        <h2 id="cache">Кеш</h2>
+
+        <h4>Де кешується</h4>
+        <ul>
+            <li><strong>HTTP-кеш браузера</strong> — <code>cache: 'no-store'</code> вирішує.</li>
+            <li><strong>Service Worker</strong> — перевіряти <code>navigator.serviceWorker.getRegistrations()</code>.</li>
+            <li><strong>Cache Storage</strong> — <code>caches.keys()</code>.</li>
+            <li><strong>GitHub Pages CDN</strong> — затримка 30–60 с після push, іноді до 5 хв.</li>
+        </ul>
+
+        <h4>Як перевірити</h4>
+        <pre><code>// у консолі браузера
+await fetch('/video-catalog/data/judo.json', {cache:'no-store'}).then(r =&gt; r.status)
+navigator.serviceWorker.getRegistrations().then(rs =&gt; rs.length)
+caches.keys().then(ks =&gt; console.log(ks))
+localStorage.getItem('GitHubAPI.token')?.length</code></pre>
+
+        <h4>Як скинути</h4>
+        <pre><code>// у консолі
+await navigator.serviceWorker.getRegistrations()
+    .then(rs =&gt; Promise.all(rs.map(r =&gt; r.unregister())))
+await caches.keys().then(ks =&gt; Promise.all(ks.map(k =&gt; caches.delete(k))))
+location.reload(true)</code></pre>
+
+        <h2 id="unicode">Unicode-очищення</h2>
+
+        <p>
+            Назви з YouTube часто містять емодзі та невидимі Unicode-символи.
+            У Python-скрипті вони прибираються функцією <code>clean_title()</code>.
+            Вручну — через Notepad++ з регексом:
+        </p>
+
+        <pre><code>[\x{200B}-\x{200D}\x{FEFF}\x{2028}\x{2029}\x{00A0}]</code></pre>
+
+        <p>
+            Замінити на <strong>порожнє</strong>. Увімкнути «Регулярні вирази»
+            перед заміною.
+        </p>
+
+        <h2 id="consts">Константи та URL</h2>
+
+        <table>
+            <tbody>
+                <tr><td>Live URL</td><td><code>https://judokaua-cyber.github.io/video-catalog/</code></td></tr>
+                <tr><td>GitHub repo</td><td><code>https://github.com/judokaua-cyber/video-catalog</code></td></tr>
+                <tr><td>GitHub data folder</td><td><code>https://github.com/judokaua-cyber/video-catalog/tree/main/data</code></td></tr>
+                <tr><td>Коміти judo.json</td><td><code>https://github.com/judokaua-cyber/video-catalog/commits/main/data/judo.json</code></td></tr>
+                <tr><td>GitHub API base</td><td><code>https://api.github.com/repos/judokaua-cyber/video-catalog</code></td></tr>
+                <tr><td>noembed</td><td><code>https://noembed.com/embed?url=...</code></td></tr>
+                <tr><td>Токен key у localStorage</td><td><code>GitHubAPI.token</code></td></tr>
+                <tr><td>Тека localStorage (folder)</td><td><code>FileStorage.lastFolderName</code></td></tr>
+                <tr><td>View у localStorage</td><td><code>videoView</code> (<code>grid</code> | <code>list</code>)</td></tr>
+            </tbody>
+        </table>
+
+        <h2 id="conventions">Угоди коду</h2>
+
+        <ul>
+            <li><strong>Мова інтерфейсу</strong> — українська.</li>
+            <li><strong>Мова коду</strong> — англійська для змінних і функцій,
+                українська для повідомлень користувачу й коментарів.</li>
+            <li><strong>Модулі</strong> — IIFE, експорт через
+                <code>window.&lt;Name&gt;</code>.</li>
+            <li><strong>CSS-класи</strong> — kebab-case, з префіксами за
+                модулем: <code>cc-</code> (context-card), <code>md-</code>
+                (move-dup, subsection), <code>sp-</code> (subsection-picker).</li>
+            <li><strong>Формат JSON</strong> — <code>ensure_ascii=False</code>,
+                <code>indent=2</code>, LF-переведення рядків.</li>
+            <li><strong>Коміти</strong> — англійською, коротко:
+                <code>Add …</code>, <code>Fix …</code>,
+                <code>Update …</code>.</li>
+            <li><strong>Кирилиця в URL</strong> — завжди через
+                <code>encodeURIComponent</code>.</li>
+            <li><strong>HTML-атрибути</strong> — подвійні лапки.</li>
+            <li><strong>Лапки в JSON</strong> — подвійні.</li>
+        </ul>
+
+        <h4>Публічні методи — тільки через явне повернення</h4>
+        <pre><code>return {
+    load,
+    getAll,
+    // ...
+};</code></pre>
+
+        <h4>Стан — модульний, не глобальний</h4>
+        <p>
+            Кожен модуль тримає свій приватний стан у замиканні IIFE.
+            Глобальні змінні — тільки у <code>section.js</code> та подібних
+            «сторінкових» скриптах (там це допустимо).
+        </p>
+
+        <div class="ok">
+            <strong>Кінець документа</strong>
+            Якщо вам як ШІ-асистенту потрібне уточнення — читайте
+            <code>manual.html</code> (користувацька частина) і
+            <code>manual_editing.html</code> (покрокова робота з JSON).
+            Вони не дублюють цей документ, а доповнюють.
+        </div>
+
+    </main>
+</div>
+
+</body>
+</html>
+<!-- ═══ КІНЕЦЬ ФАЙЛУ developer_notes.html ═══ -->
