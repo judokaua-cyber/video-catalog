@@ -18,6 +18,8 @@
             --ok-border: #16a34a;
             --err-bg: #fee2e2;
             --err-border: #dc2626;
+            --admin-bg: #f5f3ff;
+            --admin-border: #7c3aed;
         }
         * { box-sizing: border-box; }
         body {
@@ -29,9 +31,6 @@
             line-height: 1.6;
         }
 
-        /* ============================================================
-           ШАПКА
-           ============================================================ */
         header {
             background: white;
             border-bottom: 1px solid var(--border);
@@ -40,15 +39,8 @@
             top: 0;
             z-index: 100;
         }
-        header h1 {
-            margin: 0 0 8px;
-            font-size: 1.5rem;
-        }
-        header p {
-            margin: 0;
-            color: var(--muted);
-            font-size: 0.9rem;
-        }
+        header h1 { margin: 0 0 8px; font-size: 1.5rem; }
+        header p { margin: 0; color: var(--muted); font-size: 0.9rem; }
         header a {
             color: var(--primary);
             text-decoration: none;
@@ -56,9 +48,6 @@
         }
         header a:hover { text-decoration: underline; }
 
-        /* ============================================================
-           МАКЕТ: ЗМІСТ + КОНТЕНТ
-           ============================================================ */
         .layout {
             display: grid;
             grid-template-columns: 260px 1fr;
@@ -68,19 +57,10 @@
             padding: 32px;
         }
         @media (max-width: 900px) {
-            .layout {
-                grid-template-columns: 1fr;
-                padding: 20px;
-            }
-            nav.toc {
-                position: static;
-                max-height: none;
-            }
+            .layout { grid-template-columns: 1fr; padding: 20px; }
+            nav.toc { position: static; max-height: none; }
         }
 
-        /* ============================================================
-           ЗМІСТ (ліва колонка)
-           ============================================================ */
         nav.toc {
             position: sticky;
             top: 100px;
@@ -110,10 +90,11 @@
             border-left-color: var(--primary);
             color: var(--primary);
         }
+        nav.toc a.admin-link:hover {
+            border-left-color: var(--admin-border);
+            color: var(--admin-border);
+        }
 
-        /* ============================================================
-           КОНТЕНТ
-           ============================================================ */
         main {
             background: white;
             border-radius: 12px;
@@ -121,12 +102,10 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             min-width: 0;
         }
-        @media (max-width: 600px) {
-            main { padding: 20px; }
-        }
+        @media (max-width: 600px) { main { padding: 20px; } }
 
         main h2 {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             margin: 40px 0 16px;
             padding-top: 20px;
             border-top: 1px solid var(--border);
@@ -159,6 +138,7 @@
             font-family: ui-monospace, 'Cascadia Code', monospace;
             font-size: 0.88em;
             color: #be185d;
+            word-break: break-word;
         }
         main pre {
             background: var(--code-bg);
@@ -173,6 +153,7 @@
             background: none;
             padding: 0;
             color: inherit;
+            word-break: normal;
         }
 
         main a {
@@ -182,39 +163,42 @@
         }
         main a:hover { text-decoration: underline; }
 
-        /* ============================================================
-           БЛОКИ ПОВІДОМЛЕНЬ
-           ============================================================ */
-        .note, .warn, .ok, .err {
+        .note, .warn, .ok, .err, .admin-note {
             padding: 14px 18px;
             border-radius: 8px;
             margin: 16px 0;
             border-left: 4px solid;
         }
-        .note {
-            background: #eff6ff;
-            border-color: var(--primary);
-        }
-        .warn {
-            background: var(--warn-bg);
-            border-color: var(--warn-border);
-        }
-        .ok {
-            background: var(--ok-bg);
-            border-color: var(--ok-border);
-        }
-        .err {
-            background: var(--err-bg);
-            border-color: var(--err-border);
-        }
-        .note strong, .warn strong, .ok strong, .err strong {
+        .note { background: #eff6ff; border-color: var(--primary); }
+        .warn { background: var(--warn-bg); border-color: var(--warn-border); }
+        .ok { background: var(--ok-bg); border-color: var(--ok-border); }
+        .err { background: var(--err-bg); border-color: var(--err-border); }
+        .admin-note { background: var(--admin-bg); border-color: var(--admin-border); }
+        .note strong, .warn strong, .ok strong, .err strong, .admin-note strong {
             display: block;
             margin-bottom: 4px;
         }
 
-        /* ============================================================
-           ТАБЛИЦІ
-           ============================================================ */
+        .section-divider {
+            margin: 60px 0 40px;
+            padding: 20px 24px;
+            background: var(--admin-bg);
+            border-radius: 10px;
+            border-left: 5px solid var(--admin-border);
+        }
+        .section-divider h2 {
+            margin: 0;
+            padding: 0;
+            border: none;
+            color: var(--admin-border);
+            font-size: 1.3rem;
+        }
+        .section-divider p {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -236,9 +220,6 @@
         }
         tr:last-child td { border-bottom: none; }
 
-        /* ============================================================
-           СХЕМИ
-           ============================================================ */
         .scheme {
             background: var(--code-bg);
             padding: 18px 22px;
@@ -252,9 +233,6 @@
             margin: 16px 0;
         }
 
-        /* ============================================================
-           КНОПКИ-ПРИКЛАДИ (імітація ПКМ)
-           ============================================================ */
         .menu-demo {
             display: inline-block;
             background: white;
@@ -264,7 +242,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             font-size: 0.85rem;
             margin: 8px 0;
-            min-width: 200px;
+            min-width: 220px;
         }
         .menu-demo .item {
             padding: 7px 12px;
@@ -280,9 +258,6 @@
             margin: 4px 8px;
         }
 
-        /* ============================================================
-           KBD
-           ============================================================ */
         kbd {
             background: white;
             border: 1px solid #cbd5e1;
@@ -294,14 +269,27 @@
             color: var(--dark);
         }
 
-        /* ============================================================
-           ПРИНТ
-           ============================================================ */
+        .bookmarklet {
+            display: block;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-family: ui-monospace, monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            margin: 12px 0;
+            overflow-x: auto;
+            white-space: pre;
+            word-break: normal;
+        }
+
         @media print {
             header, nav.toc { display: none; }
             .layout { grid-template-columns: 1fr; padding: 0; }
             main { box-shadow: none; padding: 0; }
             main h2 { page-break-after: avoid; }
+            .section-divider { page-break-before: always; }
         }
     </style>
 </head>
@@ -310,329 +298,379 @@
 <header>
     <h1>📖 Посібник користувача</h1>
     <p>
-        Каталог YouTube-відео на базі Jamstack ·
-        <a href="index.html">← До каталогу</a>
+        Каталог YouTube-відео · <a href="index.html">← До каталогу</a>
     </p>
 </header>
 
 <div class="layout">
 
-    <!-- ============================================================
-         ЗМІСТ
-         ============================================================ -->
     <nav class="toc">
-        <h3>Основи</h3>
-        <a href="#what">Що це таке</a>
-        <a href="#structure">Структура</a>
-        <a href="#run">Як запустити</a>
-
-        <h3>Робота з каталогом</h3>
+        <h3>Для користувача</h3>
+        <a href="#intro">Передмова</a>
         <a href="#nav">Навігація</a>
-        <a href="#edit-album">Альбоми</a>
+        <a href="#bookmarklet">Додати відео із закладкою</a>
+        <a href="#edit-video">Редагування відео</a>
         <a href="#edit-section">Розділи</a>
-        <a href="#edit-video">Відео</a>
+        <a href="#subsections">Підрозділи</a>
         <a href="#pkm">Контекстне меню (ПКМ)</a>
+        <a href="#troubles-user">Типові питання</a>
 
-        <h3>Дані</h3>
-        <a href="#data-files">Файли даних</a>
-        <a href="#json-format">Формат JSON</a>
-        <a href="#save">Збереження змін</a>
-
-        <h3>Публікація</h3>
-        <a href="#github">GitHub Pages</a>
-		
-		<h3>Оновлення</h3>
-        <a href="#update">Як оновлювати каталог</a>
-		<a href="#zoho">Масовий імпорт із Zoho</a>
-		<a href="#telegram">Масовий імпорт із Telegram</a>
-		<a href="#hend">Масовий імпорт із Telegram</a>
-		
-        <h3>Проблеми</h3>
-        <a href="#troubles">Типові проблеми</a>
-        <a href="#faq">Часті питання</a>
+        <h3>Для адміністратора</h3>
+        <a href="#admin-intro" class="admin-link">Передмова</a>
+        <a href="#pycharm" class="admin-link">PyCharm і GitHub</a>
+        <a href="#manual-edit" class="admin-link">Ручне редагування JSON</a>
+        <a href="#telegram" class="admin-link">Імпорт із Telegram</a>
+        <a href="#save" class="admin-link">Збереження змін</a>
+        <a href="#data-files" class="admin-link">Файли даних</a>
+        <a href="#tech-notes" class="admin-link">Технічні деталі</a>
     </nav>
 
-    <!-- ============================================================
-         КОНТЕНТ
-         ============================================================ -->
     <main>
-		</p>
-        <h2 id="what">Що це таке</h2>
+
+        <!-- ═══════════════════════════════════════════════════════
+             ЧАСТИНА 1 — ДЛЯ КОРИСТУВАЧА
+             ═══════════════════════════════════════════════════════ -->
+
+        <h2 id="intro">Передмова</h2>
 
         <p>
-            Це <strong>статичний веб-сайт</strong> для каталогізації YouTube-відео.
-            Він <strong>не потребує серверної частини</strong>, бази даних, API-ключа
-            YouTube чи щомісячної плати. Уся інформація зберігається у звичайних
-            JSON-файлах у теці <code>data/</code>, а сам сайт складається лише з
-            HTML, CSS і трохи JavaScript.
+            Це <strong>каталог YouTube-відео</strong> — сайт, який збирає
+            посилання на відео в тематичні альбоми. Відео зберігаються не
+            на сайті, а на YouTube; тут лише <strong>зручний покажчик</strong>:
+            обкладинки, назви, розділи, пошук.
         </p>
 
         <p>
-            Каталог можна <strong>розмістити безкоштовно</strong> на
-            GitHub Pages, Cloudflare Pages, Netlify — де завгодно.
+            Каталог працює у браузері. Окремої програми встановлювати не
+            треба. Відкрити можна з будь-якого пристрою:
         </p>
+
+        <ul>
+            <li><strong>На телефоні</strong> — встановіть каталог як додаток
+                на головний екран (див. нижче).</li>
+            <li><strong>На ПК</strong> — просто відкрийте
+                <code>https://judokaua-cyber.github.io/video-catalog/</code>
+                у браузері.</li>
+        </ul>
 
         <div class="note">
-            <strong>Ключова ідея</strong>
-            Відео не завантажуються на сайт. Зберігаються лише <strong>посилання</strong>
-            на YouTube. Плеєр вбудовується на сторінку динамічно, коли ви
-            натискаєте на прев'ю.
+            <strong>Як встановити на телефоні</strong>
+            Відкрийте сайт у Chrome (Android) або Safari (iPhone) →
+            меню браузера → <strong>«Додати на головний екран»</strong>.
+            Після цього з'явиться іконка, як у звичайної програми.
         </div>
 
-        <h2 id="structure">Структура проєкту</h2>
-
-        <div class="scheme">WEB_project/
-│
-├── index.html              ← Головна (каталог альбомів)
-├── index.js                ← Логіка головної
-├── index.css               ← Стилі головної
-├── styles.css              ← Базові стилі (спільні)
-├── manual.html             ← Цей посібник
-│
-├── album/
-│   ├── album.html          ← Каталог розділів одного альбому
-│   ├── album.js
-│   └── album.css
-│
-├── section/
-│   ├── section.html        ← Каталог відео одного розділу
-│   ├── section.js
-│   └── section.css
-│
-├── css/                    ← Спільні стилі
-│   ├── context-card.css    (картки + ПКМ-меню)
-│   └── modal.css           (модальні вікна)
-│
-├── js/                     ← Спільні модулі JS
-│   ├── store-albums.js     (робота з albums.json)
-│   ├── store-videos.js     (робота з albumN.json)
-│   ├── modal.js            (модальні вікна)
-│   └── context-card.js     (картки + ПКМ)
-│
-└── data/                   ← ДАНІ (усе, що ви редагуєте)
-    ├── albums.json         ← Індекс усіх альбомів
-    ├── album1.json         ← Відео альбому 1
-    ├── album2.json         ← Відео альбому 2
-    └── album3.json         ← Відео альбому 3</div>
-
-        <div class="warn">
-            <strong>Не плутайте</strong>
-            <code>albums.json</code> (з літерою <strong>s</strong> на кінці) — це
-            <strong>індекс усіх альбомів</strong>. А <code>album1.json</code>,
-            <code>album2.json</code> (без <strong>s</strong>) — це
-            <strong>відео конкретного альбому</strong>. Це різні файли.
-        </div>
-
-        <h2 id="run">Як запустити локально</h2>
-
         <p>
-            Просто відкрити <code>index.html</code> у браузері <strong>не вийде</strong> —
-            браузер блокує читання локальних JSON-файлів із міркувань безпеки.
-            Потрібен <strong>локальний веб-сервер</strong>.
-        </p>
-
-        <h3>Варіант 1. Python (найшвидший)</h3>
-
-        <p>Відкрийте PowerShell. Виконайте три команди:</p>
-
-        <pre><code>H:
-cd \WEB_project
-python3 -m http.server 8000</code></pre>
-
-        <p>
-            Побачите рядок <code>Serving HTTP on :: port 8000 ...</code>. Це означає,
-            що сервер працює. Відкрийте у браузері:
-        </p>
-
-        <pre><code>http://localhost:8000/</code></pre>
-
-        <div class="note">
-            <strong>Як зупинити сервер</strong>
-            Поверніться у вікно PowerShell, натисніть <kbd>Ctrl</kbd>+<kbd>C</kbd>.
-        </div>
-
-        <h3>Варіант 2. VS Code Live Server</h3>
-
-        <ol>
-            <li>Встановіть розширення <strong>Live Server</strong> у VS Code.</li>
-            <li>Відкрийте теку <code>WEB_project</code>.</li>
-            <li>Права кнопка на <code>index.html</code> → <strong>Open with Live Server</strong>.</li>
-        </ol>
-
-        <h3>Якщо <code>python3</code> не знайдено</h3>
-
-        <p>Спробуйте <code>python</code> замість <code>python3</code>:</p>
-
-        <pre><code>python -m http.server 8000</code></pre>
-
-        <p>
-            Якщо й це не працює — Python не встановлено. Завантажте з
-            <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">python.org</a>,
-            під час встановлення обов'язково позначте <strong>"Add Python to PATH"</strong>.
+            Нижче — усе, що потрібно, щоб користуватися каталогом. Якщо ви
+            адміністратор і хочете оновлювати каталог через PyCharm або
+            GitHub — дивіться розділ <a href="#admin-intro">«Для адміністратора»</a>
+            ближче до кінця.
         </p>
 
         <h2 id="nav">Навігація</h2>
 
-        <p>Сайт має три рівні. Перехід — зліва направо, кліком лівою кнопкою миші.</p>
+        <p>
+            Каталог має <strong>три рівні</strong>. Перехід між ними —
+            зліва направо, кліком лівою кнопкою миші.
+        </p>
 
         <div class="scheme">┌─────────────────────────────────────┐
-│  Головна (index.html)               │
-│  3 картки альбомів + "Новий альбом" │
+│  Головна — список альбомів          │
+│  Картки: Дзюдо · Майстерня · Побут  │
 └──────────────┬──────────────────────┘
                │ ЛКМ на картці
                ▼
 ┌─────────────────────────────────────┐
-│  Альбом (album.html?id=album1)      │
-│  Картки розділів + "Новий розділ"   │
+│  Альбом — список розділів           │
+│  Наприклад: JUDO · Kuzushi · …      │
 └──────────────┬──────────────────────┘
                │ ЛКМ на картці
                ▼
 ┌─────────────────────────────────────┐
-│  Розділ (section.html?id=…&name=…)  │
-│  Картки відео                       │
+│  Розділ — картки відео              │
+│  Кожна з прев'ю та назвою           │
 └──────────────┬──────────────────────┘
                │ ЛКМ на ▶
                ▼
-         YouTube плеєр у картці</div>
+       Відео відтворюється у картці</div>
 
         <p>
             Кожна сторінка має <strong>хлібні крихти</strong> вгорі — щоб
             повернутися на рівень вище одним кліком.
         </p>
 
-        <h2 id="edit-album">Редагування альбомів</h2>
+        <h3>Пошук</h3>
 
-        <p>На головній сторінці є картки альбомів. З ними можна робити таке:</p>
+        <p>
+            На сторінці розділу є <strong>поле пошуку</strong> (🔎).
+            Введіть будь-яку частину назви відео — список фільтрується
+            одразу.
+        </p>
 
-        <h3>Створити новий альбом</h3>
+        <h3>Вигляд: сітка або список</h3>
+
+        <p>
+            Кнопки <strong>«▦ Сітка»</strong> та <strong>«☰ Список»</strong>
+            змінюють вигляд карток. Сітка зручніша для перегляду прев'ю,
+            список — для читання довгих назв.
+        </p>
+
+        <h2 id="bookmarklet">Додати відео із закладкою</h2>
+
+        <p>
+            Найшвидший спосіб додати нове відео в каталог — <strong>закладка
+            в браузері</strong>. Ви дивитесь відео на YouTube, натискаєте
+            закладку — і відео автоматично з'являється у каталозі.
+        </p>
+
+        <h3>Як створити закладку</h3>
+
         <ol>
-            <li>Клік на картку <strong>"＋ Новий альбом"</strong>.</li>
-            <li>Заповніть <strong>Назву</strong>, <strong>Опис</strong>, оберіть <strong>обкладинку</strong> (необов'язково).</li>
-            <li>Натисніть <strong>Створити</strong>.</li>
-            <li>Погодьтеся на створення файлу даних (див. нижче).</li>
+            <li>Відкрийте <strong>закладки</strong> браузера
+                (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd> у Chrome).</li>
+            <li>Створіть нову закладку (правий клік → «Додати закладку»).</li>
+            <li>Назву введіть будь-яку — наприклад,
+                <strong>«📥 До каталогу»</strong>.</li>
+            <li>У полі <strong>URL</strong> вставте наступний код:</li>
+        </ol>
+
+        <div class="bookmarklet">javascript:(function(){var u=location.href;var t=document.title.replace(/\s*-\s*YouTube\s*$/,'');var base='https://judokaua-cyber.github.io/video-catalog/add.html';window.open(base+'?url='+encodeURIComponent(u)+'&title='+encodeURIComponent(t),'_blank');})();</div>
+
+        <div class="warn">
+            <strong>Копіюйте уважно</strong>
+            Це <strong>весь</strong> код, включно з початковим
+            <code>javascript:</code>. Якщо хоч один символ загубиться —
+            закладка не працюватиме. Найкраще — виділити весь рядок, скопіювати
+            й вставити як є, без правок.
+        </div>
+
+        <h3>Як користуватися</h3>
+
+        <ol>
+            <li>Відкрийте потрібне відео на YouTube.</li>
+            <li>Натисніть закладку <strong>«📥 До каталогу»</strong>.</li>
+            <li>Відкриється сторінка додавання — вона покаже назву відео.</li>
+            <li>Виберіть <strong>альбом</strong>.</li>
+            <li>Виберіть <strong>розділ</strong> (можна створити новий).</li>
+            <li>Натисніть <strong>Зберегти</strong>.</li>
+        </ol>
+
+        <div class="ok">
+            <strong>Готово</strong>
+            Через ~30 секунд відео з'явиться у каталозі. Це найшвидший
+            спосіб — він працює і на телефоні, і на ПК.
+        </div>
+
+        <div class="note">
+            <strong>Перший раз</strong>
+            Якщо браузер запитає токен — вставте його один раз, і більше
+            не питатиме. Токен зберігається тільки на вашому пристрої.
+        </div>
+
+        <h2 id="edit-video">Редагування відео</h2>
+
+        <p>
+            На сторінці розділу кожне відео — окрема картка. З карткою можна
+            робити кілька речей через <strong>контекстне меню</strong>
+            (права кнопка миші) або через <strong>кнопку ⋮</strong> на картці.
+        </p>
+
+        <div class="menu-demo">
+            <div class="item">✏️ Редагувати</div>
+            <div class="item">🔀 Переміщення / Дублювання в альбомі</div>
+            <div class="item">📁 Перемістити в підгрупу</div>
+            <div class="sep"></div>
+            <div class="item danger">🗑️ Видалити відео</div>
+        </div>
+
+        <div class="note">
+            <strong>Чому кнопка ⋮</strong>
+            Коли відео відтворюється — у картці з'являється плеєр YouTube.
+            Права кнопка миші на ньому відкриває меню <em>плеєра</em>, а не
+            каталогу. Тому на кожній картці є окрема кнопка <strong>⋮</strong>
+            — вона завжди відкриває наше меню, незалежно від того,
+            чи запущене відео.
+        </div>
+
+        <h3>Редагувати</h3>
+
+        <p>Відкриває форму з трьома полями:</p>
+
+        <ul>
+            <li><strong>Назва</strong> — те, що видно під прев'ю.</li>
+            <li><strong>URL</strong> — посилання на YouTube у будь-якому форматі.</li>
+            <li><strong>Розділ</strong> — випадаючий список. Зміна перемістить
+                відео в інший розділ.</li>
+            <li><strong>Підрозділ</strong> — необов'язкове поле (див. розділ
+                <a href="#subsections">«Підрозділи»</a>).</li>
+        </ul>
+
+        <h3>Переміщення / Дублювання в альбомі</h3>
+
+        <p>
+            Дозволяє перемістити відео в інший <strong>розділ</strong> того
+            самого альбому або створити його копію.
+        </p>
+
+        <ul>
+            <li><strong>🔀 Перемістити</strong> — відео зникає з поточного
+                розділу й з'являється в цільовому.</li>
+            <li><strong>📋 Дублювати</strong> — створюється копія з назвою
+                <code>«Назва (копія)»</code>. Оригінал залишається на місці.</li>
+        </ul>
+
+        <h3>Видалити відео</h3>
+
+        <p>
+            Запитує підтвердження і видаляє відео з каталогу. Саме відео на
+            YouTube не чіпається — воно залишається там.
+        </p>
+
+        <h3>Групове переміщення</h3>
+
+        <p>
+            Можна вибрати кілька карток і перемістити їх усі одразу.
+        </p>
+
+        <ol>
+            <li>Натисніть <kbd>Ctrl</kbd> і клікніть на картку — вона
+                підсвітиться.</li>
+            <li>Повторіть для інших карток.</li>
+            <li>Права кнопка на одній із виділених → <strong>📁 Перемістити
+                вибране</strong>.</li>
+            <li>Виберіть підрозділ або створіть новий.</li>
         </ol>
 
         <div class="note">
-            <strong>Автоматичні ID</strong>
-            Назва альбому автоматично перетворюється на ID:
-            <br>«Техніка у стійці» → <code>tekhnika-u-stiytsi</code>
-            <br>«Ката 2024» → <code>kata-2024</code>
-            <br>Латиниця, цифри, дефіси — решта символів прибирається.
+            <strong>Якщо у картці запущене відео</strong>
+            <kbd>Ctrl</kbd>+клік по плеєру не спрацює — плеєр перехоплює
+            клік. Використовуйте кнопку <strong>□</strong> на картці для
+            виділення.
         </div>
 
-        <h3>Редагувати альбом</h3>
+        <h2 id="edit-section">Розділи</h2>
+
         <p>
-            <strong>ПКМ</strong> на картці → <strong>Редагувати альбом</strong>.
-            У модалці змініть назву, опис або обкладинку → <strong>Зберегти</strong>.
+            Розділ — це група відео всередині альбому. Наприклад, в альбомі
+            «Дзюдо» можуть бути розділи <em>JUDO</em>, <em>Kuzushi</em>,
+            <em>УДУШЕННЯ</em>.
         </p>
-
-        <h3>Обкладинка альбому</h3>
-        <p>
-            У модалці редагування — кнопка <strong>"📁 Обрати файл…"</strong>.
-            Виберіть зображення з диска. Воно автоматично перетвориться
-            на Base64 і збережеться прямо в <code>albums.json</code>.
-        </p>
-
-        <div class="warn">
-            <strong>Розмір обкладинки</strong>
-            Рекомендовано до 300 КБ. Якщо більше — сайт попередить.
-            Base64 збільшує розмір файлу на ~30%. Стискайте картинки перед
-            завантаженням (наприклад, через <a href="https://squoosh.app/" target="_blank" rel="noopener">squoosh.app</a>).
-        </div>
-
-        <h3>Видалити альбом</h3>
-        <p>
-            <strong>ПКМ</strong> на картці → <strong>Видалити альбом</strong> →
-            підтвердити. Альбом зникне з <code>albums.json</code>, але файл
-            <code>albumN.json</code> залишиться на диску — його треба
-            видалити вручну, якщо більше не потрібен.
-        </p>
-
-        <h2 id="edit-section">Редагування розділів</h2>
-
-        <p>На сторінці альбому — картки розділів. Дії ті самі, що й для альбомів.</p>
 
         <h3>Створити новий розділ</h3>
+
         <ol>
-            <li>На сторінці альбому клік на <strong>"＋ Новий розділ"</strong>.</li>
-            <li>Введіть <strong>назву</strong> (наприклад, <code>JUDO</code>), опис.</li>
+            <li>На сторінці альбому натисніть <strong>«＋ Новий розділ»</strong>.</li>
+            <li>Введіть назву й опис (опис — необов'язковий).</li>
             <li>Натисніть <strong>Створити</strong>.</li>
-            <li>Сайт запитає: <strong>"Додати відео зараз?"</strong>. Погодьтеся або відмовтеся.</li>
+            <li>Сайт запитає: <em>«Додати відео зараз?»</em>. Погодьтеся
+                або відмовтеся.</li>
         </ol>
 
         <div class="note">
             <strong>Порожній розділ невидимий</strong>
             Розділ з'являється у списку лише після того, як у нього додано
-            <strong>хоча б одне відео</strong>. Це особливість архітектури:
-            розділи обчислюються з наявних відео.
+            <strong>хоч одне відео</strong>. Якщо ви створили розділ, але не
+            додали відео — він не показуватиметься.
         </div>
 
-        <h3>Додати відео в розділ</h3>
+        <h3>Редагувати розділ</h3>
+
         <p>
-            <strong>ПКМ</strong> на картці розділу → <strong>Додати відео</strong>.
-            Вставте одне або кілька посилань — по одному в рядку, або всі підряд.
+            Права кнопка на картці розділу → <strong>Редагувати розділ</strong>.
+            Можна змінити назву, опис або обкладинку.
         </p>
 
-        <h2 id="edit-video">Редагування відео</h2>
+        <h3>Видалити розділ</h3>
 
-        <p>На сторінці розділу — картки відео. <strong>ПКМ</strong> на картці відкриває меню:</p>
-
-        <div class="menu-demo">
-            <div class="item">✏️ Редагувати</div>
-            <div class="item">🔀 Переміщення / Дублювання</div>
-            <div class="sep"></div>
-            <div class="item danger">🗑️ Видалити відео</div>
-        </div>
-
-        <h3>Редагувати</h3>
-        <p>Відкриває модалку з трьома полями:</p>
-        <ul>
-            <li><strong>Назва</strong> — те, що видно під прев'ю.</li>
-            <li><strong>URL</strong> — посилання на YouTube у будь-якому форматі.</li>
-            <li><strong>Розділ</strong> — випадаючий список. Зміна переміщує відео в інший розділ.</li>
-        </ul>
-
-        <h3>Переміщення / Дублювання</h3>
         <p>
-            Відкриває модалку з сіткою всіх розділів альбому. Спочатку треба
-            обрати <strong>цільовий розділ</strong> (крок 1), потім — обрати дію
-            (крок 2):
+            Права кнопка → <strong>Видалити розділ</strong>. Усі відео цього
+            розділу також буде видалено з каталогу (на YouTube вони
+            залишаться).
         </p>
 
-        <ul>
-            <li><strong>🔀 Перемістити</strong> — відео зникає з поточного розділу
-                і з'являється в цільовому. Недоступно, якщо цільовий = поточний.</li>
-            <li><strong>📋 Дублювати</strong> — створюється копія відео з назвою
-                <code>«Назва (копія)»</code> у цільовому розділі. Оригінал
-                залишається на місці.</li>
-        </ul>
+        <h2 id="subsections">Підрозділи</h2>
+
+        <p>
+            Підрозділ — це <strong>вкладений рівень</strong> всередині
+            розділу. Наприклад, у розділі «Зачеп» можуть бути підрозділи
+            <em>«Зачеп ззовні»</em> та <em>«Зачеп зсередини»</em>.
+        </p>
+
+        <p>
+            На сторінці розділу підрозділи видно як <strong>папки</strong>:
+        </p>
+
+        <div class="scheme">┌─ Зачеп ─────────────────────────────┐
+│  📁 Зачеп ззовні         12 відео    │
+│  📁 Зачеп зсередини       8 відео    │
+│  ▶  Basic Ouchi gari                 │
+│  ▶  RUNNING STEP OUCHI GARI          │
+└──────────────────────────────────────┘</div>
+
+        <p>
+            Усі відео розділу, які <strong>не переміщені в підрозділ</strong>,
+            показуються знизу як звичайні картки. Клік на папку — перехід
+            всередину підрозділу.
+        </p>
+
+        <h3>Як створити підрозділ</h3>
+
+        <p>
+            Підрозділ створюється <strong>автоматично</strong>, щойно в нього
+            потрапляє хоч одне відео. Окремої кнопки «Створити підрозділ»
+            немає.
+        </p>
+
+        <ol>
+            <li>Права кнопка на картці відео → <strong>📁 Перемістити
+                в підгрупу</strong>.</li>
+            <li>У вікні натисніть <strong>«＋ Новий підрозділ…»</strong>.</li>
+            <li>Введіть назву (наприклад, «Зачеп ззовні»).</li>
+            <li>Підтвердьте переміщення.</li>
+        </ol>
+
+        <p>
+            Після цього у розділі з'явиться папка з цією назвою, а картка
+            відео — усередині неї.
+        </p>
+
+        <h3>Перемістити відео в підрозділ</h3>
+
+        <p>
+            Права кнопка на картці → <strong>📁 Перемістити в підгрупу</strong>
+            → виберіть наявний підрозділ або створіть новий.
+        </p>
+
+        <p>
+            Щоб <strong>прибрати</strong> підрозділ (повернути відео в
+            основний список), у тому ж вікні виберіть картку
+            <strong>«(без підрозділу)»</strong>.
+        </p>
 
         <div class="note">
-            <strong>Навігація в модалці</strong>
-            Хлібні крихти вгорі модалки показують шлях: <em>Альбом › Цільовий розділ</em>.
-            Клік на назву альбому повертає до вибору розділу.
+            <strong>Порожній підрозділ зникає</strong>
+            Якщо з підрозділу прибрати всі відео — папка зникає. Це та сама
+            логіка, що й у розділів: вони обчислюються з наявних відео, а не
+            зберігаються окремо.
         </div>
-
-        <h3>Видалити відео</h3>
-        <p>Запитує підтвердження і видаляє відео з <code>albumN.json</code>.</p>
 
         <h2 id="pkm">Контекстне меню (ПКМ)</h2>
 
         <p>
             <strong>Права кнопка миші</strong> на будь-якій картці відкриває
-            контекстне меню з діями. Це основний спосіб редагування.
+            контекстне меню. Це основний спосіб редагування.
         </p>
 
-                <table>
+        <table>
             <thead>
                 <tr>
                     <th>Де</th>
-                    <th>Дії в ПКМ</th>
+                    <th>Дії в меню</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>Картка альбому<br><small>(на головній)</small></td>
+                    <td>Картка альбому</td>
                     <td>
                         📂 Відкрити · ✏️ Редагувати альбом ·
                         📥 Завантажити JSON · 🔗 Додати посилання ·
@@ -640,17 +678,17 @@ python3 -m http.server 8000</code></pre>
                     </td>
                 </tr>
                 <tr>
-                    <td>Картка розділу<br><small>(на сторінці альбому)</small></td>
+                    <td>Картка розділу</td>
                     <td>
                         📂 Відкрити · ✏️ Редагувати розділ ·
                         🔗 Додати відео · 🗑️ Видалити розділ
                     </td>
                 </tr>
                 <tr>
-                    <td>Картка відео<br><small>(на сторінці розділу)</small></td>
+                    <td>Картка відео</td>
                     <td>
                         ✏️ Редагувати · 🔀 Переміщення / Дублювання ·
-                        🗑️ Видалити відео
+                        📁 Перемістити в підгрупу · 🗑️ Видалити відео
                     </td>
                 </tr>
             </tbody>
@@ -663,413 +701,421 @@ python3 -m http.server 8000</code></pre>
             <li>Клавішею <kbd>Esc</kbd>.</li>
         </ul>
 
-        <h2 id="data-files">Файли даних</h2>
+        <h2 id="troubles-user">Типові питання</h2>
 
-        <p>Уся інформація каталогу живе у теці <code>data/</code>. Два типи файлів:</p>
-
-        <h3><code>albums.json</code> — індекс альбомів</h3>
+        <h3>Відео не запускається</h3>
         <p>
-            Один файл. Містить масив записів про всі альбоми: ID, назва,
-            опис, обкладинка, ім'я файлу з відео.
+            Перевірте, чи є посилання коректним. Натисніть правою кнопкою
+            → <strong>Редагувати</strong> — подивіться, чи URL правильний.
         </p>
 
-        <h3><code>albumN.json</code> — відео одного альбому</h3>
+        <h3>Не можу додати відео — просить токен</h3>
         <p>
-            Один файл на кожен альбом. Містить масив відео: назва, розділ, URL.
+            Це перший раз. Вставте токен, який вам дав адміністратор. Він
+            збережеться у браузері, і більше не питатиме.
         </p>
 
-        <h2 id="json-format">Формат JSON</h2>
+        <h3>Права кнопка не відкриває меню</h3>
+        <p>
+            Якщо у картці запущене відео — права кнопка всередині плеєра
+            відкриває меню <em>YouTube</em>. Використовуйте кнопку
+            <strong>⋮</strong> на картці.
+        </p>
 
-        <h3>albums.json</h3>
+        <h3>Не бачу нових відео</h3>
+        <p>
+            Оновіть сторінку з очищенням кешу: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>.
+            Зміни на GitHub Pages з'являються за 30–60 секунд після публікації.
+        </p>
 
-        <pre><code>[
-  {
-    "id": "judo-basics",
-    "title": "JUDO Basics",
-    "description": "Основи дзюдо",
-    "cover": "data:image/jpeg;base64,/9j/4AAQ...",
-    "file": "judo-basics.json",
-    "sections": {
-      "Кидки": {
-        "description": "Техніка кидків",
-        "cover": ""
-      }
-    }
-  }
-]</code></pre>
+        <!-- ═══════════════════════════════════════════════════════
+             ЧАСТИНА 2 — ДЛЯ АДМІНІСТРАТОРА
+             ═══════════════════════════════════════════════════════ -->
 
-        <h3>albumN.json (наприклад, judo-basics.json)</h3>
+        <div class="section-divider">
+            <h2 id="admin-intro">Для адміністратора</h2>
+            <p>
+                Ця частина — для того, хто оновлює каталог: редагує JSON,
+                запускає Telegram-скрипт, пушить зміни на GitHub.
+                Звичайному користувачеві вона не потрібна.
+            </p>
+        </div>
 
-        <pre><code>[
-  {
-    "title": "Osoto Gari",
-    "section": "Кидки",
-    "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-  },
-  {
-    "title": "Uchi Mata",
-    "section": "Кидки",
-    "url": "https://youtu.be/9bZkp7q19f0"
-  }
-]</code></pre>
+        <h2 id="pycharm">PyCharm і GitHub</h2>
 
-        <div class="note">
-            <strong>URL — у будь-якому форматі</strong>
-            Сайт розуміє всі формати YouTube:
-            <ul style="margin: 8px 0 0 0;">
-                <li><code>https://youtu.be/ID</code></li>
-                <li><code>https://www.youtube.com/watch?v=ID</code></li>
-                <li><code>https://www.youtube.com/shorts/ID</code></li>
-                <li><code>https://www.youtube.com/embed/ID</code></li>
-                <li>Просто <code>ID</code> (11 символів)</li>
-            </ul>
+        <p>
+            Робота з каталогом ведеться через <strong>PyCharm</strong> і
+            репозиторій на <strong>GitHub</strong>. Це дозволяє бачити
+            історію змін, відкочувати помилки та публікувати сайт.
+        </p>
+
+        <h3>Репозиторій на ПК</h3>
+
+        <div class="scheme">C:\Users\Kodak\PycharmProjects\video-catalog\
+├── data\               ← файли з відео
+├── js\                 ← модулі JavaScript
+├── section\            ← сторінка розділу
+├── album\              ← сторінка альбому
+├── index.html
+├── manual.html         ← цей посібник
+└── ...</div>
+
+        <h3>Правильний цикл роботи</h3>
+
+        <ol>
+            <li>
+                <strong>Стягнути свіже з GitHub:</strong>
+                <div class="scheme">git pull</div>
+                Робіть це <strong>перед кожним редагуванням</strong>.
+            </li>
+            <li>
+                Внести зміни у файли (через PyCharm або через Telegram-скрипт).
+            </li>
+            <li>
+                <strong>Закомітити:</strong>
+                <div class="scheme">git add .
+git commit -m "Опис зміни"</div>
+            </li>
+            <li>
+                <strong>Запушити:</strong>
+                <div class="scheme">git push</div>
+            </li>
+            <li>
+                Через 30 секунд оновити сайт і перевірити з
+                <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>.
+            </li>
+        </ol>
+
+        <h3>Через GUI PyCharm</h3>
+
+        <p>
+            Замість команд у терміналі можна користуватися кнопками:
+        </p>
+
+        <ul>
+            <li><strong>Ctrl+T</strong> — <em>Pull</em> (стягнути з GitHub).</li>
+            <li><strong>Ctrl+K</strong> — <em>Commit</em> (закомітити зміни).</li>
+            <li><strong>Ctrl+Shift+K</strong> — <em>Push</em> (відправити на GitHub).</li>
+        </ul>
+
+        <div class="warn">
+            <strong>Конфлікти при push</strong>
+            Якщо push відхилено — це означає, що на GitHub є коміти, яких
+            немає у вас. Зробіть <code>git pull</code>, вирішіть конфлікт
+            (якщо є), потім знову <code>git push</code>. Детально — у
+            <a href="manual_editing.html">«Ручне редагування JSON»</a>.
+        </div>
+
+        <h2 id="manual-edit">Ручне редагування JSON</h2>
+
+        <p>
+            Файли з відео можна редагувати напряму — у PyCharm або
+            Notepad++. Це швидше для масових правок: замінити назву розділу
+            у всіх записах, змінити порядок, виправити одруківку.
+        </p>
+
+        <p>
+            Детальна покрокова інструкція — у файлі
+            <a href="manual_editing.html"><strong>manual_editing.html</strong></a>.
+            Там описано:
+        </p>
+
+        <ul>
+            <li>як редагувати й перевіряти JSON;</li>
+            <li>типові помилки у файлі;</li>
+            <li>як робити <code>pull</code>, <code>commit</code>,
+                <code>push</code>;</li>
+            <li>що робити при конфліктах.</li>
+        </ul>
+
+        <div class="admin-note">
+            <strong>Правило</strong>
+            Перед кожним редагуванням — <code>git pull</code>.
+            Після редагування — перевірте JSON валідатором
+            (<a href="https://jsonlint.com/" target="_blank" rel="noopener">jsonlint.com</a>).
+        </div>
+
+        <h2 id="telegram">Імпорт із Telegram</h2>
+
+        <p>
+            Якщо у вас накопичились YouTube-посилання в групах Telegram —
+            їх можна перенести в каталог масово. Для цього є окремий
+            Python-скрипт.
+        </p>
+
+        <h3>Як це працює</h3>
+
+        <ol>
+            <li>У Telegram Desktop: права кнопка на групі →
+                <strong>Експортувати історію чату</strong>.</li>
+            <li>Формат — <strong>JSON</strong>. Зніміть галочки з
+                усіх типів вмісту, залиште тільки <strong>Текст</strong>.</li>
+            <li>Скрипт <code>telegram_to_json.py</code> знаходить найновішу
+                підтеку <code>ChatExport_*</code> і читає звідти
+                <code>result.json</code>.</li>
+            <li>Витягує всі YouTube-посилання, дедуплікує, тягне назви
+                через <code>noembed.com</code>.</li>
+            <li>Питає у вас альбом, розділ і підрозділ.</li>
+            <li>Дописує нові відео у відповідний файл
+                <code>data/&lt;album&gt;.json</code>.</li>
+            <li>Пропонує запушити на GitHub.</li>
+        </ol>
+
+        <h3>Запуск</h3>
+
+        <p>
+            Подвійний клік на <code>import_telegram.bat</code> у теці
+            <code>C:\Users\Kodak\PycharmProjects\video-catalog\</code>.
+        </p>
+
+        <p>
+            Детальна інструкція — у файлі <code>README.txt</code>, який
+            лежить поряд зі скриптом.
+        </p>
+
+        <div class="admin-note">
+            <strong>Коли не потрібен</strong>
+            Якщо ви додаєте відео по одному через закладку — цей скрипт
+            не потрібен. Він для одноразового масового перенесення, коли у
+            вас у Telegram уже є список із десятків чи сотень посилань.
         </div>
 
         <h2 id="save">Збереження змін</h2>
 
         <p>
-            Зміни, зроблені на сайті, спочатку живуть <strong>тільки у пам'яті
-            браузера</strong>. Щоб вони потрапили у файл на диску, треба
-            натиснути кнопку <strong>«💾 Зберегти»</strong> в банері, який
-            з'являється внизу екрана. Спосіб збереження залежить від браузера.
+            Зміни, зроблені <strong>на сайті</strong> (через ПКМ або
+            закладку), спочатку живуть тільки в пам'яті браузера. Щоб вони
+            потрапили у файл — натисніть кнопку <strong>«💾 Зберегти»</strong>
+            у банері внизу екрана.
         </p>
 
-        <h3>Спосіб 1. File System Access API (Chrome, Edge, Opera)</h3>
+        <h3>Що відбувається після натискання</h3>
 
         <p>
-            Це найзручніший режим. Файл зберігається <strong>прямо у вашу теку
-            <code>data/</code></strong>, без завантажень у <code>Downloads</code>.
-        </p>
-
-        <ol>
-            <li>Ви щось змінюєте на сайті (додаєте відео, редагуєте назву…).</li>
-            <li>Внизу з'являється <strong>банер</strong>:
-                <div class="scheme" style="margin: 8px 0;">⚠️ Є незбережені зміни   [💾 Зберегти album1.json]</div>
-            </li>
-            <li>Натискаєте кнопку. <strong>Першого разу</strong> браузер
-                попросить вибрати теку — вкажіть <code>H:\WEB_project\data\</code>
-                і натисніть <strong>«Зберегти доступ»</strong>.</li>
-            <li>Усі наступні збереження летять у цю саму теку <strong>автоматично</strong>.</li>
-            <li>Оновлюєте сторінку — зміни закріпилися.</li>
-        </ol>
-
-        <div class="note">
-            <strong>Дозвіл скидається при перезапуску браузера</strong>
-            Якщо ви повністю закриєте Chrome і відкриєте знову — треба буде
-            ще раз обрати теку (один клік). Це обмеження браузера, а не сайту.
-        </div>
-
-        <div class="warn">
-            <strong>Важливо: обирайте саме <code>data/</code></strong>
-            Якщо виберете <code>H:\WEB_project\</code> замість
-            <code>H:\WEB_project\data\</code> — файли потраплять у корінь
-            проєкту, і сайт їх не знайде. Будьте уважні.
-        </div>
-
-        <h3>Спосіб 2. Завантаження в Downloads (Firefox, Safari)</h3>
-
-        <p>
-            Якщо браузер не підтримує File System Access API — файл
-            завантажується у теку <code>Downloads</code>, як звичайний файл.
-        </p>
-
-        <ol>
-            <li>Ви щось змінюєте на сайті.</li>
-            <li>Внизу з'являється банер:
-                <div class="scheme" style="margin: 8px 0;">⚠️ Є незбережені зміни   [💾 Зберегти album1.json]</div>
-            </li>
-            <li>Натискаєте — файл з'являється в <code>C:\Users\ВашеІм'я\Downloads\</code>.</li>
-            <li><strong>Вручну</strong> копіюєте його в
-                <code>H:\WEB_project\data\</code>, замінюючи старий.</li>
-            <li>Оновлюєте сторінку — зміни закріпилися.</li>
-        </ol>
-
-        <div class="note">
-            <strong>Як дізнатись, який спосіб використано</strong>
-            Після збереження сайт показує повідомлення внизу сторінки:
-            <ul style="margin: 8px 0 0 0;">
-                <li><strong>«✅ Збережено у вибрану теку»</strong> — Спосіб 1 (File System Access).</li>
-                <li><strong>«✅ Завантажено в Downloads»</strong> — Спосіб 2 (завантаження файлу).</li>
-            </ul>
-        </div>
-
-        <div class="note">
-            <strong>Чому браузер не пише файли сам</strong>
-            Без явного дозволу користувача жоден сайт не може записувати файли
-            на диск — це фундаментальна вимога безпеки вебу. File System Access
-            API працює тільки після того, як ви <em>свідомо</em> вибрали теку
-            й натиснули «Зберегти доступ».
-        </div>
-
-
-        <h2 id="github">Публікація на GitHub Pages</h2>
-
-        <h3>Крок 1. Створіть репозиторій</h3>
-        <ol>
-            <li>Зареєструйтесь на <a href="https://github.com/" target="_blank" rel="noopener">github.com</a>, якщо ще немає акаунта.</li>
-            <li>Створіть новий репозиторій: <strong>New repository</strong>.</li>
-            <li>Назва — будь-яка (наприклад, <code>video-catalog</code>).</li>
-            <li>Поставте галочку <strong>Public</strong>.</li>
-            <li>Не додавайте README / .gitignore — просто <strong>Create</strong>.</li>
-        </ol>
-
-        <h3>Крок 2. Завантажте файли</h3>
-
-        <p>Найпростіше — через веб-інтерфейс GitHub:</p>
-        <ol>
-            <li>У порожньому репозиторії натисніть <strong>"uploading an existing file"</strong>.</li>
-            <li>Перетягніть <strong>усі</strong> файли й теки з <code>H:\WEB_project\</code>.</li>
-            <li>Внизу натисніть <strong>Commit changes</strong>.</li>
-        </ol>
-
-        <div class="warn">
-            <strong>Не забудьте про теку <code>data/</code></strong>
-            GitHub Pages має бачити <strong>усі</strong> JSON-файли. Перевірте,
-            що <code>data/albums.json</code>, <code>data/album1.json</code> тощо
-            справді завантажені. Інакше сайт покаже помилку.
-        </div>
-
-        <h3>Крок 3. Увімкніть GitHub Pages</h3>
-        <ol>
-            <li>У репозиторії — вкладка <strong>Settings</strong>.</li>
-            <li>Ліве меню — <strong>Pages</strong>.</li>
-            <li>У розділі <strong>Source</strong> — виберіть <strong>Deploy from a branch</strong>.</li>
-            <li>Branch: <strong>main</strong>, folder: <strong>/ (root)</strong>.</li>
-            <li>Натисніть <strong>Save</strong>.</li>
-        </ol>
-
-        <p>Через 1–2 хвилини сайт буде доступний за адресою:</p>
-
-        <pre><code>https://ваш-логін.github.io/video-catalog/</code></pre>
-		
-		<p>
-
-         <h3 id="update">Як оновлювати каталог</h3>
-
-        <p>
-            Каталог можна поповнювати <strong>трьома способами</strong>:
-        </p>
-
-        <ol>
-            <li><strong>Масовий імпорт із Zoho Notebook</strong> — Python-скрипт
-                читає експорт HTML і створює файли <code>data/*.json</code>.</li>
-            <li><strong>Масовий імпорт із Telegram</strong> — окремий скрипт для
-                іншого формату (розглядається нижче).</li>
-            <li><strong>Ручне додавання</strong> через ПКМ-меню прямо на сайті
-                (для поодиноких відео).</li>
-        </ol>
-
-        <p>
-            Нижче описано <strong>перший спосіб</strong> — масовий імпорт із
-            Zoho. Він актуальний, якщо у вас накопичено багато карток у
-            <em>Zoho Notebook</em> і треба перенести їх у каталог.
-        </p>
-
-        <h3 id="zoho">Частина 1. Масовий імпорт із Zoho</h3>
-
-        <div class="note">
-            <strong>Коли це потрібно</strong>
-            Якщо ви назбирали нові картки в Zoho Notebook і хочете перенести їх
-            у каталог. Скрипт <code>zoho_to_json.py</code> прочитає
-            <em>усі</em> HTML-файли зі своєї теки, згрупує за розділами й
-            альбомами та створить готові JSON у теці <code>data/</code>.
-        </div>
-
-        <h4>Що потрібно підготувати</h4>
-
-        <p>
-            У теці <code>H:\WEB_project\Zoho_convert\</code> мають лежати:
-        </p>
-
-        <div class="scheme">Zoho_convert/
-├── zoho_to_json.py     ← скрипт (не чіпаємо)
-├── zoho_export/        ← HTML-файли, експортовані з Zoho
-│   ├── *.html
-│   └── PrivateCovers/  ← заставки розділів (експорт Zoho)
-├── covers/             ← заставки розділів (копії, готові до використання)
-└── tytul/              ← обкладинки альбомів
-    ├── judo.png
-    ├── master.png
-    └── pobut.png</div>
-
-        <div class="warn">
-            <strong>Експорт із Zoho</strong>
-            HTML-файли експортуються <strong>вручну</strong> з Zoho Notebook:
-            виділіть картки → <em>Експорт</em> → HTML. Потім покладіть їх у
-            <code>Zoho_convert/zoho_export/</code>. Так само — заставки
-            розділів у <code>PrivateCovers/</code>.
-        </div>
-
-        <h4>Структура маппінгу: розділ → альбом</h4>
-
-        <p>
-            Zoho не має поняття «альбом» — тільки «розділ» (notebook). Щоб
-            розділи потрапили у правильні альбоми, у скрипті є таблиця
-            <code>ALBUM_MAPPING</code>:
-        </p>
-
-        <pre><code>ALBUM_MAPPING = {
-    "JUDO": "judo",
-    "Kuzushi": "judo",
-    "Больові": "judo",
-    ...
-    "a_1 Верстат": "master",
-    ...
-    "Їжа": "pobut",
-}</code></pre>
-
-        <p>
-            Ліворуч — назва розділу в Zoho, праворуч — ID альбому
-            (<code>judo</code>, <code>master</code>, <code>pobut</code>).
-        </p>
-
-        <div class="note">
-            <strong>Якщо з'явився новий розділ</strong>
-            Після запуску скрипт напише у звіті: «Розділів не знайдено в
-            ALBUM_MAPPING». Відкрийте <code>zoho_to_json.py</code>, додайте
-            потрібний рядок у таблицю, збережіть і запустіть знову.
-        </div>
-
-        <h4>Запуск скрипта</h4>
-
-        <p>Відкрийте PowerShell і виконайте:</p>
-
-        <pre><code>H:
-cd \WEB_project\Zoho_convert
-python zoho_to_json.py</code></pre>
-
-        <p>Скрипт виведе щось таке:</p>
-
-        <div class="scheme">════════════════════════════════════════════════════════════
-  Zoho -> JSON конвертер
-════════════════════════════════════════════════════════════
-  Вхід:  H:\WEB_project\Zoho_convert\zoho_export
-  Вихід: H:\WEB_project\data
-
-📄 Знайдено HTML-файлів: 1553
-  Карток з YouTube-посиланням: 1501
-  Карток без YouTube:          51 (пропущено)
-  Невалідних HTML:             1
-
-📝 Формування JSON...
-  ✓ judo: обкладинка judo.png
-  ✓ judo.json: 22 розділів, 380 відео
-  ✓ master: обкладинка master.png
-  ✓ master.json: 10 розділів, 1119 відео
-  ✓ pobut: обкладинка pobut.png
-  ✓ pobut.json: 1 розділів, 2 відео
-  ✓ albums.json: 3 альбомів
-
-════════════════════════════════════════════════════════════
-✅ Готово!
-════════════════════════════════════════════════════════════</div>
-
-        <h4>Що саме створює скрипт</h4>
-
-        <p>
-            У теці <code>H:\WEB_project\data\</code> оновлюються або
-            створюються:
+            Сайт зберігає файл у два місця одночасно:
         </p>
 
         <ul>
-            <li><code>albums.json</code> — індекс альбомів (з обкладинками
-                Base64 із теки <code>tytul/</code>).</li>
-            <li><code>judo.json</code> — відео альбому «Дзюдо».</li>
-            <li><code>master.json</code> — відео альбому «Майстерня».</li>
-            <li><code>pobut.json</code> — відео альбому «Побут».</li>
+            <li><strong>На GitHub</strong> — через GitHub API, якщо в браузері
+                є токен.</li>
+            <li><strong>Локально</strong> — у теку, яку ви вибрали (File
+                System Access API, тільки Chrome/Edge).</li>
         </ul>
 
-        <div class="warn">
-            <strong>Старі файли</strong>
-            Скрипт <strong>не видаляє</strong> сторонні файли з
-            <code>data/</code>. Якщо там залишились тестові
-            <code>album1.json</code>, <code>album2.json</code> тощо — їх
-            треба прибрати <strong>вручну</strong>. Вони не заважатимуть
-            роботі, але й не будуть використовуватись каталогом.
-        </div>
-
-        <h4>Перевірка результату</h4>
-
-        <ol>
-            <li>Відкрийте <code>H:\WEB_project\data\</code> у Проводнику.
-                Переконайтесь, що <code>albums.json</code> та три
-                <code>judo.json / master.json / pobut.json</code> мають
-                <strong>щойно оновлений</strong> час зміни.</li>
-            <li>Запустіть локальний сервер і відкрийте каталог (див.
-                розділ <a href="#run">«Як запустити локально»</a>).</li>
-            <li>На головній сторінці побачите три альбоми з обкладинками
-                та правильними лічильниками.</li>
-            <li>Усередині альбомів — розділи з заставками. Відео
-                відтворюються при кліку на <strong>▶</strong>.</li>
-        </ol>
-
-        <div class="ok">
-            <strong>Готово</strong>
-            Після запуску скрипта каталог оновлено. Можете закрити Zoho
-            Notebook — усі дані вже в JSON-файлах.
-        </div>
-
-        <h4>Можливі проблеми</h4>
+        <p>
+            Після збереження сайт показує повідомлення:
+        </p>
 
         <table>
             <thead>
                 <tr>
-                    <th>Що бачите</th>
-                    <th>Що робити</th>
+                    <th>Повідомлення</th>
+                    <th>Що це означає</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>«Не знайдено теку <code>zoho_export</code>»</td>
-                    <td>Перевірте, що тека справді називається <code>zoho_export</code>
-                        і лежить поруч зі скриптом.</td>
+                    <td>✅ Записано локально та закомічено на GitHub</td>
+                    <td>Усе гаразд. Файл і в теці, і на GitHub.</td>
                 </tr>
                 <tr>
-                    <td>«Розділів не знайдено в ALBUM_MAPPING»</td>
-                    <td>Відкрийте <code>zoho_to_json.py</code>, знайдіть
-                        <code>ALBUM_MAPPING</code>, додайте рядок
-                        <code>"Назва розділу": "judo"</code> (або інший альбом).
-                        Збережіть — запустіть знову.</td>
+                    <td>✅ Закомічено на GitHub</td>
+                    <td>Токен працює, GitHub оновлено. Локальна тека
+                        не вибрана.</td>
                 </tr>
                 <tr>
-                    <td>Багато карток «без YouTube»</td>
-                    <td>Перевірте, чи у картках справді є посилання на YouTube.
-                        Якщо так, але скрипт їх не бачить — покажіть приклад HTML,
-                        треба буде підправити регулярний вираз.</td>
+                    <td>✅ Збережено у вибрану теку</td>
+                    <td>Файл у локальній теці, але на GitHub <strong>не
+                        пішов</strong>. Перевірте токен.</td>
                 </tr>
                 <tr>
-                    <td>Обкладинка альбому не з'явилась</td>
-                    <td>Перевірте, що у <code>tytul/</code> є файл
-                        <code>judo.png</code> (або відповідний для іншого
-                        альбому). Ім'я файлу має співпадати з полем
-                        <code>cover_file</code> у скрипті.</td>
-                </tr>
-                <tr>
-                    <td>Розділ без заставки</td>
-                    <td>Нормально. Якщо для розділу немає PNG у
-                        <code>covers/</code> — у каталозі покажеться кольорова
-                        плитка з першою літерою. Можна додати PNG вручну і
-                        запустити скрипт знову.</td>
+                    <td>✅ Завантажено в Downloads</td>
+                    <td>Токена немає, файл врятовано через завантаження.
+                        Треба покласти його в <code>data/</code> вручну.</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3 id="telegram">Частина 2. Масовий імпорт із Telegram</h3>
-
-        <div class="note">
-            <strong>У розробці</strong>
-            Цей розділ буде додано пізніше. Telegram-експорт має інший
-            формат, тому для нього знадобиться окремий скрипт.
+        <div class="warn">
+            <strong>Токен GitHub</strong>
+            Без токена зміни з сайту не потрапляють на GitHub автоматично.
+            Токен зберігається у <code>localStorage</code> браузера. Якщо
+            Chrome блокує сторонні cookie — <code>localStorage</code> теж
+            може не працювати. У такому разі дозвольте сторонні cookie
+            у налаштуваннях Chrome.
         </div>
 
-        <h3 id="hend">Частина 3. Ручне додавання</h3>
+        <h2 id="data-files">Файли даних</h2>
 
         <p>
-            Для поодиноких відео не потрібен скрипт. Просто відкрийте
-            потрібний розділ на сайті та використайте
-            <strong>ПКМ → Додати відео</strong>.
-            Детально — у розділі <a href="#edit-section">«Редагування розділів»</a>.
+            Уся інформація каталогу — у теці <code>data/</code>. Два типи
+            файлів:
         </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Файл</th>
+                    <th>Призначення</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>albums.json</code></td>
+                    <td>Індекс усіх альбомів: ID, назва, опис, обкладинка
+                        (Base64), ім'я файлу з відео.</td>
+                </tr>
+                <tr>
+                    <td><code>&lt;album&gt;.json</code></td>
+                    <td>Відео одного альбому: назва, розділ, підрозділ, URL.
+                        Наприклад, <code>judo.json</code>,
+                        <code>master.json</code>.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Формат запису відео</h3>
+
+        <pre><code>{
+  "title": "Basic Ouchi gari",
+  "section": "Зачеп",
+  "subsection": "Зачеп ззовні",
+  "url": "https://www.youtube.com/watch?v=e-CtiY2RLwA"
+}</code></pre>
+
+        <p>
+            Поле <code>subsection</code> — необов'язкове. Якщо його немає —
+            відео вважається «без підрозділу».
+        </p>
+
+        <h3>URL — у будь-якому форматі</h3>
+
+        <p>Сайт розуміє всі формати YouTube:</p>
+
+        <ul>
+            <li><code>https://youtu.be/ID</code></li>
+            <li><code>https://www.youtube.com/watch?v=ID</code></li>
+            <li><code>https://www.youtube.com/shorts/ID</code></li>
+            <li><code>https://www.youtube.com/embed/ID</code></li>
+            <li>Просто <code>ID</code> (11 символів)</li>
+        </ul>
+
+        <h2 id="tech-notes">Технічні деталі</h2>
+
+        <p>
+            Сайт — статичний. HTML + CSS + трохи JavaScript. Жодного сервера,
+            бази даних чи API-ключа YouTube.
+        </p>
+
+        <h3>Як сайт читає дані</h3>
+
+        <ul>
+            <li><code>albums.json</code> — читається через
+                <code>AlbumsStore.load()</code> з <code>cache: 'no-store'</code>.</li>
+            <li><code>&lt;album&gt;.json</code> — читається через
+                <code>VideosStore.load()</code> з <code>cache: 'no-store'</code>.</li>
+        </ul>
+
+        <h3>Як сайт пише дані</h3>
+
+        <ol>
+            <li>Користувач щось змінює → зміна у пам'яті
+                (<code>VideosStore</code> або <code>AlbumsStore</code>).</li>
+            <li>З'являється банер «Є незбережені зміни».</li>
+            <li>Натискання кнопки → <code>FileStorage.save()</code>.</li>
+            <li>Спроба записати через File System Access API (якщо
+                доступний).</li>
+            <li>Спроба записати через GitHub API (якщо є токен).</li>
+            <li>Якщо обидва не вдались — завантаження у <code>Downloads</code>.</li>
+        </ol>
+
+        <h3>Модулі JavaScript</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Файл</th>
+                    <th>Призначення</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>js/store-albums.js</code></td>
+                    <td>Робота з <code>albums.json</code></td>
+                </tr>
+                <tr>
+                    <td><code>js/store-videos.js</code></td>
+                    <td>Робота з <code>&lt;album&gt;.json</code>:
+                        додавання, редагування, переміщення,
+                        підрозділи.</td>
+                </tr>
+                <tr>
+                    <td><code>js/modal.js</code></td>
+                    <td>Модальні вікна</td>
+                </tr>
+                <tr>
+                    <td><code>js/context-card.js</code></td>
+                    <td>Картки та контекстне меню</td>
+                </tr>
+                <tr>
+                    <td><code>js/modal-move-dup.js</code></td>
+                    <td>Переміщення / дублювання між розділами</td>
+                </tr>
+                <tr>
+                    <td><code>js/modal-subsection-picker.js</code></td>
+                    <td>Вибір підрозділу, створення нового,
+                        групове переміщення</td>
+                </tr>
+                <tr>
+                    <td><code>js/file-storage.js</code></td>
+                    <td>Збереження файлів (File System Access +
+                        GitHub + Downloads)</td>
+                </tr>
+                <tr>
+                    <td><code>js/github-api.js</code></td>
+                    <td>Запити до GitHub API</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Публікація</h3>
+
+        <p>
+            Сайт хоститься на <strong>GitHub Pages</strong> з гілки
+            <code>main</code>. Після кожного <code>git push</code> GitHub
+            автоматично перебудовує сайт — це займає 30–60 секунд.
+        </p>
+
+        <p>
+            Адреса:
+            <a href="https://judokaua-cyber.github.io/video-catalog/" target="_blank" rel="noopener">
+                https://judokaua-cyber.github.io/video-catalog/
+            </a>
+        </p>
+
+        <h3>Оновлення коду</h3>
+
+        <p>
+            Після оновлення будь-якого <code>.js</code>, <code>.css</code>
+            або <code>.html</code> файлу — обов'язково робіть
+            <code>git push</code>. Кеш браузера може віддавати старі
+            версії, тому після перевірки робіть
+            <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>.
+        </p>
+
+        <div class="admin-note">
+            <strong>Для ШІ-асистента</strong>
+            Якщо ви передаєте цей каталог іншому розробнику або
+            ШІ-асистенту, найкорисніше — надати:
+            <ul style="margin: 8px 0 0 0;">
+                <li>цей файл (<code>manual.html</code>) — архітектура й
+                    робочий процес;</li>
+                <li><code>manual_editing.html</code> — покрокова робота
+                    з JSON;</li>
+                <li>файли з теки <code>js/</code> — модулі;</li>
+                <li>структуру <code>data/</code>.</li>
+            </ul>
+        </div>
 
     </main>
 </div>
