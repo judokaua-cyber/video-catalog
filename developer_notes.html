@@ -61,9 +61,28 @@
             padding: 24px;
         }
         @media (max-width: 900px) {
-            .layout { grid-template-columns: 1fr; padding: 16px; }
-            nav.toc { position: static; max-height: none; }
-        }
+    .layout {
+        grid-template-columns: 1fr;
+        padding: 16px;
+        gap: 20px;
+    }
+    nav.toc {
+        position: static;
+        max-height: none;
+        overflow-y: visible;
+        background: white;
+        border-radius: 10px;
+        padding: 12px 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        margin-bottom: 8px;
+    }
+    nav.toc h3 {
+        margin: 12px 0 6px;
+    }
+    nav.toc h3:first-child {
+        margin-top: 0;
+    }
+}
 
         nav.toc {
             position: sticky;
