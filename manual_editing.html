@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ручне редагування JSON — Відео Академія</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --muted: #64748b;
+            --code-bg: #f1f5f9;
+            --warn-bg: #fef3c7;
+            --warn-border: #f59e0b;
+            --ok-bg: #dcfce7;
+            --ok-border: #16a34a;
+            --err-bg: #fee2e2;
+            --err-border: #dc2626;
+            --note-bg: #eff6ff;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.65;
+        }
+
+        header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 24px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header h1 { margin: 0 0 8px; font-size: 1.5rem; }
+        header p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+        header a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        header a:hover { text-decoration: underline; }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 40px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; padding: 20px; }
+            nav.toc { position: static; max-height: none; }
+        }
+
+        nav.toc {
+            position: sticky;
+            top: 100px;
+            align-self: start;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            font-size: 0.9rem;
+        }
+        nav.toc h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            margin: 20px 0 8px;
+        }
+        nav.toc h3:first-child { margin-top: 0; }
+        nav.toc a {
+            display: block;
+            padding: 4px 10px;
+            color: var(--dark);
+            text-decoration: none;
+            border-radius: 6px;
+            border-left: 2px solid transparent;
+        }
+        nav.toc a:hover {
+            background: white;
+            border-left-color: var(--primary);
+            color: var(--primary);
+        }
+
+        main {
+            background: white;
+            border-radius: 12px;
+            padding: 32px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            min-width: 0;
+        }
+        @media (max-width: 600px) { main { padding: 20px; } }
+
+        main h2 {
+            font-size: 1.4rem;
+            margin: 40px 0 16px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            scroll-margin-top: 100px;
+        }
+        main h2:first-child {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+        main h3 {
+            font-size: 1.1rem;
+            margin: 24px 0 12px;
+            scroll-margin-top: 100px;
+        }
+        main p, main li { line-height: 1.65; }
+        main ul, main ol { padding-left: 22px; }
+        main li { margin: 4px 0; }
+
+        main code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: ui-monospace, 'Cascadia Code', monospace;
+            font-size: 0.88em;
+            color: #be185d;
+        }
+        main pre {
+            background: var(--code-bg);
+            padding: 16px 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            border: 1px solid var(--border);
+        }
+        main pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        .note, .warn, .ok, .err {
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin: 16px 0;
+            border-left: 4px solid;
+        }
+        .note { background: var(--note-bg); border-color: var(--primary); }
+        .warn { background: var(--warn-bg); border-color: var(--warn-border); }
+        .ok { background: var(--ok-bg); border-color: var(--ok-border); }
+        .err { background: var(--err-bg); border-color: var(--err-border); }
+        .note strong, .warn strong, .ok strong, .err strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .steps {
+            counter-reset: step;
+            list-style: none;
+            padding-left: 0;
+        }
+        .steps > li {
+            counter-increment: step;
+            position: relative;
+            padding-left: 52px;
+            margin: 20px 0;
+        }
+        .steps > li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 34px;
+            height: 34px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        kbd {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-bottom-width: 2px;
+            border-radius: 4px;
+            padding: 1px 6px;
+            font-family: ui-monospace, monospace;
+            font-size: 0.8em;
+            color: var(--dark);
+        }
+
+        .cmd-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-family: ui-monospace, 'Cascadia Code', monospace;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            margin: 12px 0;
+            overflow-x: auto;
+        }
+        .cmd-block .cmt { color: #94a3b8; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: var(--code-bg);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--muted);
+        }
+        tr:last-child td { border-bottom: none; }
+
+        @media print {
+            header, nav.toc { display: none; }
+            .layout { grid-template-columns: 1fr; padding: 0; }
+            main { box-shadow: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>✏️ Ручне редагування JSON</h1>
+    <p>
+        Як вносити правки прямо у файл альбому та пушити на GitHub ·
+        <a href="index.html">← До каталогу</a> ·
+        <a href="manual.html">📖 Посібник</a>
+    </p>
+</header>
+
+<div class="layout">
+
+    <nav class="toc">
+        <h3>Загальне</h3>
+        <a href="#when">Коли це потрібно</a>
+        <a href="#structure">Структура файлів</a>
+
+        <h3>Покроково</h3>
+        <a href="#edit">1. Відкрити і відредагувати</a>
+        <a href="#validate">2. Перевірити JSON</a>
+        <a href="#pull">3. Стягнути з GitHub</a>
+        <a href="#commit">4. Закомітити</a>
+        <a href="#push">5. Запушити</a>
+        <a href="#check">6. Перевірити на сайті</a>
+
+        <h3>Проблеми</h3>
+        <a href="#conflict">Конфлікт при pull</a>
+        <a href="#typo">Помилка в JSON</a>
+        <a href="#reject">Push rejected</a>
+
+        <h3>Довідка</h3>
+        <a href="#commands">Шпаргалка команд</a>
+    </nav>
+
+    <main>
+
+        <h2 id="when">Коли це потрібно</h2>
+
+        <p>
+            Іноді зручніше <strong>відредагувати JSON вручну</strong> — у PyCharm або Notepad++ —
+            ніж клацати ПКМ на сайті. Наприклад:
+        </p>
+
+        <ul>
+            <li>Треба <strong>масово замінити</strong> щось у багатьох записах (наприклад, виправити
+                одруківку в назві розділу).</li>
+            <li>Треба <strong>додати кілька відео</strong> одночасно, і ви вже маєте готовий список.</li>
+            <li>Треба <strong>змінити порядок</strong> відео, щоб певні йшли першими.</li>
+            <li>Ви <strong>випадково зіпсували</strong> запис, і треба виправити вручну.</li>
+        </ul>
+
+        <div class="note">
+            <strong>Це стосується файлів альбомів</strong>
+            Приклади: <code>data/judo.json</code>, <code>data/master.json</code>,
+            <code>data/pobut.json</code>. Це <strong>не</strong> стосується
+            <code>albums.json</code> — його краще редагувати через сайт, бо там
+            Base64-обкладинки (легко щось зламати).
+        </div>
+
+        <h2 id="structure">Структура файлів</h2>
+
+        <p>
+            Усі файли живуть у репозиторії на ПК:
+        </p>
+
+        <pre><code>C:\Users\Kodak\PycharmProjects\video-catalog\
+├── data\
+│   ├── albums.json          ← індекс альбомів (не чіпайте вручну)
+│   ├── judo.json            ← альбом «Дзюдо»    ← редагуємо
+│   ├── master.json          ← альбом «Майстерня» ← редагуємо
+│   └── pobut.json           ← альбом «Побут»     ← редагуємо</code></pre>
+
+        <p>Запис відео має такий вигляд:</p>
+
+        <pre><code>{
+  "title": "Basic Ouchi gari",
+  "section": "Зачеп",
+  "subsection": "Зачеп ззовні",
+  "url": "https://www.youtube.com/watch?v=e-CtiY2RLwA"
+}</code></pre>
+
+        <p>
+            Поле <code>subsection</code> — <strong>необов'язкове</strong>. Якщо його немає, відео
+            вважається «без підрозділу». Поле <code>section</code> — обов'язкове.
+        </p>
+
+        <h2 id="edit">1. Відкрити і відредагувати</h2>
+
+        <ol class="steps">
+            <li>
+                Відкрийте <strong>PyCharm</strong>. У лівому дереві проєкту знайдіть
+                <code>data/</code> → потрібний файл, наприклад <code>judo.json</code>.
+            </li>
+            <li>
+                Двічі клікніть на файл — він відкриється в редакторі.
+            </li>
+            <li>
+                Внесіть зміни. Найчастіші операції:
+                <ul>
+                    <li><strong>Додати відео</strong> — скопіюйте попередній блок
+                        <code>{ ... }</code>, вставте після нього, змініть
+                        <code>title</code>, <code>section</code>, <code>url</code>.</li>
+                    <li><strong>Змінити розділ</strong> — знайдіть <code>"section": "Старе"</code>
+                        і замініть на <code>"section": "Нове"</code>.</li>
+                    <li><strong>Видалити відео</strong> — виділіть весь блок
+                        <code>{ ... },</code> разом із комою — і видаліть.</li>
+                    <li><strong>Змінити порядок</strong> — виріжте блок і вставте в інше місце.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Збережіть</strong> файл: <kbd>Ctrl</kbd>+<kbd>S</kbd>.
+            </li>
+        </ol>
+
+        <div class="warn">
+            <strong>Увага на коми й дужки</strong>
+            JSON дуже чутливий до дрібниць:
+            <ul>
+                <li>Між об'єктами <strong>обов'язкова кома</strong>: <code>}, {</code>.</li>
+                <li>Після <strong>останнього</strong> об'єкта кома <strong>не потрібна</strong>.</li>
+                <li>Усі ключі й рядки — <strong>у подвійних лапках</strong>
+                    <code>"title"</code>, не <code>'title'</code> і не <code>title</code>.</li>
+                <li>Кожна <code>{</code> має свою <code>}</code>.</li>
+                <li>Файл закінчується на <code>]</code>.</li>
+            </ul>
+        </div>
+
+        <h2 id="validate">2. Перевірити JSON</h2>
+
+        <p>
+            Перед тим, як комітити, <strong>переконайтесь, що JSON валідний</strong>.
+            Інакше сайт зламається.
+        </p>
+
+        <h3>Спосіб А — PyCharm автоматично</h3>
+        <p>
+            PyCharm підсвічує синтаксичні помилки <strong>червоним</strong>. Якщо
+            бачите червоне підкреслення в файлі — щось не так. Наведіть курсор
+            на підкреслене — PyCharm скаже, що саме.
+        </p>
+
+        <h3>Спосіб Б — онлайн-валідатор</h3>
+        <p>
+            Відкрийте <a href="https://jsonlint.com/" target="_blank" rel="noopener">jsonlint.com</a>
+            → вставте весь вміст файлу → <strong>Validate JSON</strong>. Якщо валідатор
+            каже <em>Valid JSON</em> — усе гаразд.
+        </p>
+
+        <h3>Спосіб В — консоль браузера</h3>
+        <p>
+            Якщо файл уже на GitHub, відкрийте каталог у браузері й у консолі
+            (<kbd>F12</kbd>) перевірте, чи немає помилок парсингу. Сторінка альбому
+            з порожнім списком — явна ознака, що JSON побитий.
+        </p>
+
+        <h2 id="pull">3. Стягнути з GitHub</h2>
+
+        <p>
+            <strong>Обов'язковий крок перед пушем.</strong> Якщо ви паралельно
+            щось редагували через браузер GitHub (або інший ПК), ваш локальний
+            репозиторій уже <em>відстає</em>. Без <code>pull</code> пуш буде
+            відхилений.
+        </p>
+
+        <p>У <strong>Terminal</strong> PyCharm (внизу вікна, вкладка «Terminal»):</p>
+
+        <div class="cmd-block">git pull</div>
+
+        <p>Що побачите:</p>
+
+        <table>
+            <thead>
+                <tr><th>Повідомлення</th><th>Що робити</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Already up to date.</code></td>
+                    <td>Нічого нового на GitHub. Можна переходити до коміту.</td>
+                </tr>
+                <tr>
+                    <td><code>Fast-forward</code> або <code>Merge made by…</code></td>
+                    <td>Підтягнулось усе успішно. Переходьте далі.</td>
+                </tr>
+                <tr>
+                    <td><code>CONFLICT …</code></td>
+                    <td>Дивіться розділ <a href="#conflict">Конфлікт при pull</a> нижче.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="commit">4. Закомітити</h2>
+
+        <p>
+            Тепер треба <strong>зафіксувати</strong> ваші зміни в локальній історії git.
+        </p>
+
+        <h3>Через GUI PyCharm (простіше)</h3>
+
+        <ol class="steps">
+            <li>
+                У лівій панелі відкрийте вкладку <strong>Commit</strong>
+                (іконка з галочкою).
+            </li>
+            <li>
+                У списку змінених файлів має бути ваш <code>judo.json</code>.
+                Поставте біля нього галочку.
+            </li>
+            <li>
+                Введіть повідомлення коміту, наприклад:
+                <code>Оновив розділ Зачеп у judo.json</code>.
+            </li>
+            <li>
+                Натисніть кнопку <strong>Commit and Push…</strong> (не просто
+                <em>Commit</em>).
+            </li>
+        </ol>
+
+        <h3>Через Terminal</h3>
+
+        <div class="cmd-block">git add data/judo.json
+git commit -m "Оновив розділ Зачеп у judo.json"
+git push</div>
+
+        <div class="note">
+            <strong>Що робить кожна команда</strong>
+            <ul>
+                <li><code>git add</code> — додає файл у «чернетку» наступного коміту.</li>
+                <li><code>git commit</code> — фіксує зміни в локальній історії.</li>
+                <li><code>git push</code> — відправляє коміти на GitHub.</li>
+            </ul>
+        </div>
+
+        <h2 id="push">5. Запушити</h2>
+
+        <p>
+            Якщо у кроці 4 ви обрали <strong>Commit and Push</strong> — пуш
+            уже відбувся. Якщо ви робили лише <em>Commit</em>, треба зробити
+            пуш окремо:
+        </p>
+
+        <div class="cmd-block">git push</div>
+
+        <p>Успішний пуш виглядає так:</p>
+
+        <div class="cmd-block">Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+...
+To https://github.com/judokaua-cyber/video-catalog.git
+   abc1234..def5678  main -> main</div>
+
+        <p>
+            Рядок <code>abc1234..def5678  main -> main</code> означає, що
+            коміти пішли на GitHub.
+        </p>
+
+        <h2 id="check">6. Перевірити на сайті</h2>
+
+        <ol class="steps">
+            <li>
+                Зачекайте <strong>30–60 секунд</strong>. GitHub Pages автоматично
+                перебудовує сайт після кожного коміту.
+            </li>
+            <li>
+                Відкрийте каталог:
+                <a href="https://judokaua-cyber.github.io/video-catalog/" target="_blank" rel="noopener">
+                    https://judokaua-cyber.github.io/video-catalog/
+                </a>
+            </li>
+            <li>
+                Натисніть <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> — це
+                <strong>жорстке оновлення</strong>, яке очищає кеш браузера.
+                Без цього ви можете бачити стару версію.
+            </li>
+            <li>
+                Зайдіть у відповідний альбом і розділ. Перевірте, чи є ваші
+                зміни.
+            </li>
+        </ol>
+
+        <div class="ok">
+            <strong>Готово</strong>
+            Якщо зміни видно — усе спрацювало. Якщо ні — зачекайте ще 30 секунд
+            і оновіть з очищенням кешу.
+        </div>
+
+        <h2 id="conflict">Проблема: конфлікт при pull</h2>
+
+        <p>
+            Якщо <code>git pull</code> показав <code>CONFLICT (content):
+            Merge conflict in data/judo.json</code> — це означає, що той самий
+            файл змінено і локально, і на GitHub. Git не знає, яку версію
+            залишити.
+        </p>
+
+        <h3>Що робити</h3>
+
+        <ol class="steps">
+            <li>
+                У лівому дереві PyCharm знайдіть <code>data/judo.json</code> —
+                він підсвічений <strong>червоним</strong>.
+            </li>
+            <li>
+                <strong>Права кнопка</strong> на файлі → <strong>Git</strong> →
+                <strong>Resolve Conflicts…</strong>
+            </li>
+            <li>
+                Відкриється редактор із трьома колонками:
+                <ul>
+                    <li><strong>ліва</strong> — ваша локальна версія,</li>
+                    <li><strong>права</strong> — версія з GitHub,</li>
+                    <li><strong>посередині</strong> — результат, який піде в коміт.</li>
+                </ul>
+            </li>
+            <li>
+                Виберіть, що залишити. Якщо треба обидві версії — приберіть
+                маркери <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>,
+                <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>
+                і залиште обидва блоки.
+            </li>
+            <li>
+                Натисніть <strong>Apply</strong>.
+            </li>
+            <li>
+                Поверніться в Terminal і виконайте:
+                <div class="cmd-block">git add data/judo.json
+git commit -m "Merge: resolve conflict"
+git push</div>
+            </li>
+        </ol>
+
+        <div class="note">
+            <strong>Як уникнути конфліктів</strong>
+            Перед тим, як редагувати файл у PyCharm, зробіть
+            <code>git pull</code>. Це підтягне свіжу версію з GitHub, і ви
+            працюватимете з нею.
+        </div>
+
+        <h2 id="typo">Проблема: помилка в JSON</h2>
+
+        <p>
+            Якщо ви забули кому або закрили не ту дужку, сайт може показати
+            порожній альбом або взагалі не завантажитись.
+        </p>
+
+        <h3>Ознаки</h3>
+        <ul>
+            <li>Сторінка альбому відкривається, але показує <strong>0 розділів</strong>.</li>
+            <li>У консолі браузера (<kbd>F12</kbd>) — червона помилка
+                <code>SyntaxError</code> або <code>Unexpected token</code>.</li>
+            <li>PyCharm підсвічує рядок червоним.</li>
+        </ul>
+
+        <h3>Що робити</h3>
+        <ol class="steps">
+            <li>
+                Відкрийте файл у PyCharm. Знайдіть червоне підкреслення.
+            </li>
+            <li>
+                Перевірте найчастіші помилки:
+                <ul>
+                    <li>пропущена кома між <code>}, {</code>;</li>
+                    <li>зайва кома після останнього об'єкта;</li>
+                    <li>одна <code>{</code> без парної <code>}</code>;</li>
+                    <li>використані одинарні лапки <code>'title'</code> замість
+                        подвійних <code>"title"</code>.</li>
+                </ul>
+            </li>
+            <li>
+                Виправте помилку, збережіть файл.
+            </li>
+            <li>
+                Якщо не можете знайти — відкрийте файл у
+                <a href="https://jsonlint.com/" target="_blank" rel="noopener">jsonlint.com</a>,
+                він покаже номер рядка з помилкою.
+            </li>
+        </ol>
+
+        <h3>Як відкотити зміни</h3>
+        <p>
+            Якщо зіпсували файл і хочете повернути версію з GitHub:
+        </p>
+        <div class="cmd-block">git checkout data/judo.json</div>
+        <p>
+            <strong>Увага:</strong> це <strong>видалить</strong> усі ваші
+            локальні зміни в цьому файлі й поверне версію з останнього коміту.
+        </p>
+
+        <h2 id="reject">Проблема: Push rejected</h2>
+
+        <p>
+            Помилка:
+        </p>
+
+        <div class="cmd-block">! [rejected] main -> main (fetch first)
+error: failed to push some refs</div>
+
+        <p>
+            Це означає, що на GitHub є коміти, яких немає у вас локально.
+            Ви пушнете поверх них — git відмовляється.
+        </p>
+
+        <h3>Що робити</h3>
+        <ol class="steps">
+            <li>
+                Спочатку підтягніть з GitHub:
+                <div class="cmd-block">git pull</div>
+            </li>
+            <li>
+                Якщо конфліктів немає — повторіть:
+                <div class="cmd-block">git push</div>
+            </li>
+            <li>
+                Якщо є конфлікт — дивіться розділ
+                <a href="#conflict">Конфлікт при pull</a>.
+            </li>
+        </ol>
+
+        <h2 id="commands">Шпаргалка команд</h2>
+
+        <table>
+            <thead>
+                <tr><th>Команда</th><th>Що робить</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>git pull</code></td>
+                    <td>Стягнути свіжі зміни з GitHub. <strong>Робіть перед кожним редагуванням.</strong></td>
+                </tr>
+                <tr>
+                    <td><code>git status</code></td>
+                    <td>Показати, які файли змінені локально.</td>
+                </tr>
+                <tr>
+                    <td><code>git diff data/judo.json</code></td>
+                    <td>Показати, що саме змінилось у файлі.</td>
+                </tr>
+                <tr>
+                    <td><code>git add data/judo.json</code></td>
+                    <td>Підготувати файл до коміту.</td>
+                </tr>
+                <tr>
+                    <td><code>git commit -m "…"</code></td>
+                    <td>Закомітити зміни з повідомленням.</td>
+                </tr>
+                <tr>
+                    <td><code>git push</code></td>
+                    <td>Відправити коміти на GitHub.</td>
+                </tr>
+                <tr>
+                    <td><code>git log --oneline -5</code></td>
+                    <td>Показати останні 5 комітів.</td>
+                </tr>
+                <tr>
+                    <td><code>git checkout data/judo.json</code></td>
+                    <td><strong>Скасувати</strong> всі локальні зміни у файлі, повернути версію з останнього коміту.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="warn">
+            <strong>Не використовуйте без розуміння</strong>
+            <ul>
+                <li><code>git reset --hard</code> — <strong>видалить усі</strong>
+                    локальні зміни в усьому проєкті.</li>
+                <li><code>git push --force</code> — <strong>перезапише</strong>
+                    історію на GitHub. Використовуйте лише якщо точно знаєте,
+                    що робите.</li>
+                <li><code>git clean -fd</code> — видалить файли, яких немає
+                    в git-історії.</li>
+            </ul>
+        </div>
+
+        <div class="ok">
+            <strong>Правильний цикл роботи</strong>
+            <ol style="margin: 8px 0 0 0;">
+                <li><code>git pull</code> — стягнути свіже.</li>
+                <li>Редагувати файл у PyCharm.</li>
+                <li><kbd>Ctrl</kbd>+<kbd>S</kbd> — зберегти.</li>
+                <li>Перевірити JSON-валідатором.</li>
+                <li><code>git add</code> + <code>git commit</code> + <code>git push</code>.</li>
+                <li>Через 30 секунд — перевірити на сайті з <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>.</li>
+            </ol>
+        </div>
+
+    </main>
+</div>
+
+</body>
+</html>
