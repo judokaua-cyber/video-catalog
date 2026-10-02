@@ -47,6 +47,19 @@
             font-weight: 500;
         }
         header a:hover { text-decoration: underline; }
+        header .toc-button {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 3px 9px;
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+        header .toc-button:hover {
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+        }
 
         .layout {
             display: grid;
@@ -55,10 +68,6 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 32px;
-        }
-        @media (max-width: 900px) {
-            .layout { grid-template-columns: 1fr; padding: 20px; }
-            nav.toc { position: static; max-height: none; }
         }
 
         nav.toc {
@@ -93,6 +102,12 @@
         nav.toc a.admin-link:hover {
             border-left-color: var(--admin-border);
             color: var(--admin-border);
+        }
+
+        nav.toc { scroll-margin-top: 100px; }
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; padding: 20px; }
+            nav.toc { position: static; max-height: none; }
         }
 
         main {
@@ -298,13 +313,14 @@
 <header>
     <h1>📖 Посібник користувача</h1>
     <p>
-        Каталог YouTube-відео · <a href="index.html">← До каталогу</a>
+        Каталог YouTube-відео · <a href="index.html">← До каталогу</a> ·
+        <a class="toc-button" href="#toc">ОГЛЯД</a>
     </p>
 </header>
 
 <div class="layout">
 
-    <nav class="toc">
+    <nav class="toc" id="toc">
         <h3>Для користувача</h3>
         <a href="#intro">Передмова</a>
         <a href="#nav">Навігація</a>
