@@ -334,11 +334,14 @@
         <h3>Для адміністратора</h3>
         <a href="#admin-intro" class="admin-link">Передмова</a>
         <a href="#pycharm" class="admin-link">PyCharm і GitHub</a>
-        <a href="#manual-edit" class="admin-link">Ручне редагування JSON</a>
+        <a href="manual_editing.html">✏️ Ручне редагування JSON</a>
         <a href="#telegram" class="admin-link">Імпорт із Telegram</a>
         <a href="#save" class="admin-link">Збереження змін</a>
         <a href="#data-files" class="admin-link">Файли даних</a>
         <a href="#tech-notes" class="admin-link">Технічні деталі</a>
+		
+        <h3>Окремі документи</h3>
+        <a href="developer_notes.html">🔧 Developer Notes</a>
     </nav>
 
     <main>
@@ -962,34 +965,6 @@ Untracked files:
             <a href="manual_editing.html">«Ручне редагування JSON»</a>.
         </div>
 
-        <h2 id="manual-edit">Ручне редагування JSON</h2>
-
-        <p>
-            Файли з відео можна редагувати напряму — у PyCharm або
-            Notepad++. Це швидше для масових правок: замінити назву розділу
-            у всіх записах, змінити порядок, виправити одруківку.
-        </p>
-
-        <p>
-            Детальна покрокова інструкція — у файлі
-            <a href="manual_editing.html"><strong>manual_editing.html</strong></a>.
-            Там описано:
-        </p>
-
-        <ul>
-            <li>як редагувати й перевіряти JSON;</li>
-            <li>типові помилки у файлі;</li>
-            <li>як робити <code>pull</code>, <code>commit</code>,
-                <code>push</code>;</li>
-            <li>що робити при конфліктах.</li>
-        </ul>
-
-        <div class="admin-note">
-            <strong>Правило</strong>
-            Перед кожним редагуванням — <code>git pull</code>.
-            Після редагування — перевірте JSON валідатором
-            (<a href="https://jsonlint.com/" target="_blank" rel="noopener">jsonlint.com</a>).
-        </div>
 
         <h2 id="telegram">Імпорт із Telegram</h2>
 
