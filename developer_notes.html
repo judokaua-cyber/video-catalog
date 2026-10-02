@@ -51,6 +51,20 @@
             text-decoration: none;
         }
         header a:hover { text-decoration: underline; }
+        header .toc-button {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 3px 9px;
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        header .toc-button:hover {
+            background: var(--accent);
+            color: var(--bg);
+            text-decoration: none;
+        }
 
         .layout {
             display: grid;
@@ -67,6 +81,7 @@
             max-height: calc(100vh - 110px);
             overflow-y: auto;
             font-size: 0.8rem;
+            scroll-margin-top: 90px;
         }
         nav.toc h3 {
             font-size: 0.7rem;
@@ -255,13 +270,14 @@
         Технічна документація для розробника / ШІ-асистента ·
         <a href="index.html">index.html</a> ·
         <a href="manual.html">manual.html</a> ·
-        <a href="manual_editing.html">manual_editing.html</a>
+        <a href="manual_editing.html">manual_editing.html</a> ·
+        <a class="toc-button" href="#toc">ОГЛЯД</a>
     </p>
 </header>
 
 <div class="layout">
 
-    <nav class="toc">
+    <nav class="toc" id="toc">
         <h3>Огляд</h3>
         <a href="#summary">Резюме проєкту</a>
         <a href="#stack">Стек технологій</a>
