@@ -1,0 +1,11 @@
+# PyCharm / JetBrains
+.idea/
+*.iml
+
+# Системне
+Thumbs.db
+.DS_Store
+
+# Тимчасове
+*.tmp
+*.bak
