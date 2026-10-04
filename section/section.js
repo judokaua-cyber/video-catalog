@@ -1,5 +1,5 @@
 /* section/section.js
-   Логіка сторінки розділу: каталог відео + підрозділи.
+   Логіка сторінки розділу: каталог відео + підрозділи + групові дії.
 */
 
 let currentAlbum = null;
@@ -529,6 +529,10 @@ function createVideoCard(item) {
     return card;
 }
 
+/* ============================================================
+   ГРУПОВІ ДІЇ
+   ============================================================ */
+
 function setupBulkActions() {
     const catalog = document.querySelector('.catalog');
     const grid = document.getElementById('video-grid');
@@ -542,21 +546,33 @@ function setupBulkActions() {
     count.className = 'bulk-video-count';
     count.setAttribute('aria-live', 'polite');
 
-    const moveBtn = document.createElement('button');
-    moveBtn.type = 'button';
-    moveBtn.className = 'btn';
-    moveBtn.textContent = '📁 Перемістити вибране в підрозділ';
-    moveBtn.hidden = true;
-    moveBtn.addEventListener('click', openBulkSubsectionPicker);
+    const moveSubBtn = document.createElement('button');
+    moveSubBtn.type = 'button';
+    moveSubBtn.className = 'btn';
+    moveSubBtn.dataset.action = 'move-sub';
+    moveSubBtn.textContent = '📁 У підрозділ';
+    moveSubBtn.hidden = true;
+    moveSubBtn.title = 'Перемістити вибране в підрозділ поточного розділу';
+    moveSubBtn.addEventListener('click', openBulkSubsectionPicker);
+
+    const moveSecBtn = document.createElement('button');
+    moveSecBtn.type = 'button';
+    moveSecBtn.className = 'btn';
+    moveSecBtn.dataset.action = 'move-sec';
+    moveSecBtn.textContent = '📂 У розділ';
+    moveSecBtn.hidden = true;
+    moveSecBtn.title = 'Перемістити вибране в інший розділ альбому';
+    moveSecBtn.addEventListener('click', openBulkSectionPicker);
 
     const clearBtn = document.createElement('button');
     clearBtn.type = 'button';
     clearBtn.className = 'btn secondary';
+    clearBtn.dataset.action = 'clear';
     clearBtn.textContent = 'Скасувати вибір';
     clearBtn.hidden = true;
     clearBtn.addEventListener('click', clearVideoSelection);
 
-    toolbar.append(count, moveBtn, clearBtn);
+    toolbar.append(count, moveSubBtn, moveSecBtn, clearBtn);
     catalog.insertBefore(toolbar, grid);
     updateBulkActions();
 }
@@ -603,8 +619,10 @@ function updateBulkActions() {
     count.textContent = hasSelection
         ? `Вибрано відео: ${selectedVideoIndices.size}`
         : 'Ctrl+Click картки або натисніть □, щоб вибрати відео';
-    toolbar.querySelector('.btn').hidden = !hasSelection;
-    toolbar.querySelector('.btn.secondary').hidden = !hasSelection;
+
+    toolbar.querySelectorAll('[data-action]').forEach(btn => {
+        btn.hidden = !hasSelection;
+    });
 }
 
 function openBulkSubsectionPicker() {
@@ -619,6 +637,31 @@ function openBulkSubsectionPicker() {
 
     SubsectionPicker.open({
         section: currentSection,
+        items,
+        onDone: () => {
+            clearVideoSelection();
+            rebuildSectionVideos();
+            updateStats();
+            applyMeta();
+            applyFilters();
+            showUnsavedHint();
+        }
+    });
+}
+
+function openBulkSectionPicker() {
+    const items = [...selectedVideoIndices]
+        .map(index => ({ video: VideosStore.getAll()[index], index }))
+        .filter(item => item.video);
+
+    if (!items.length) {
+        clearVideoSelection();
+        return;
+    }
+
+    BulkSectionPicker.open({
+        album: currentAlbum,
+        currentSection: currentSection,
         items,
         onDone: () => {
             clearVideoSelection();
@@ -956,3 +999,4 @@ function showUnsavedHint() {
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', init);
+// ═══ КІНЕЦЬ ФАЙЛУ section.js ═══
