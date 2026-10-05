@@ -1,5 +1,6 @@
 /* ============================================================
    Логіка головної сторінки: каталог альбомів
+   + автозбереження через AutoSave
    ============================================================ */
 
 const DATA_BASE = 'data/';
@@ -11,8 +12,19 @@ const MAX_COVER_SIZE = 300 * 1024;   // 300 КБ
 
 function setStatus(msg, isError = false) {
     const el = document.getElementById('status');
+    if (!el) return;
     el.textContent = msg || '';
     el.classList.toggle('error', isError);
+}
+
+/* ============================================================
+   АВТОЗБЕРЕЖЕННЯ
+   ============================================================ */
+
+function touchChanges() {
+    if (window.AutoSave) {
+        AutoSave.schedule();
+    }
 }
 
 /* ============================================================
@@ -31,6 +43,13 @@ async function renderCatalog() {
         console.error(err);
         setStatus('Помилка завантаження albums.json: ' + err.message, true);
         return;
+    }
+
+    // Реєструємо сховища для автозбереження
+    if (window.AutoSave) {
+        AutoSave.setSources([
+            { name: 'albums.json', store: AlbumsStore }
+        ]);
     }
 
     const albums = AlbumsStore.getAll();
@@ -126,13 +145,9 @@ async function createAlbumCard(album) {
 function openAlbumEditor(album) {
     const isNew = !album;
 
-    // Локальний стан цієї модалки
-    let coverDataUrl = album?.cover || '';   // data:image/...;base64,...
+    let coverDataUrl = album?.cover || '';
     let coverName = '';
     let coverSize = 0;
-
-    // --- Побудова вмісту модалки вручну (не через Modal.open) ---
-    // Бо потрібна кастомна логіка з файлом і прев'ю.
 
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
@@ -194,7 +209,6 @@ function openAlbumEditor(album) {
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    // --- Елементи ---
     const form = modal.querySelector('form');
     const titleInput = modal.querySelector('#mf-title');
     const descInput = modal.querySelector('#mf-description');
@@ -206,12 +220,10 @@ function openAlbumEditor(album) {
     const cancelBtn = modal.querySelector('#modal-cancel');
     const closeBtn = modal.querySelector('.modal-close');
 
-    // --- Початкові значення ---
     titleInput.value = album?.title || '';
     descInput.value = album?.description || '';
     renderCoverPreview();
 
-    // --- Прев'ю обкладинки ---
     function renderCoverPreview() {
         coverPreview.innerHTML = '';
         if (coverDataUrl) {
@@ -229,12 +241,10 @@ function openAlbumEditor(album) {
         }
     }
 
-    // Оновлюємо літеру-заглушку, коли змінюється назва
     titleInput.addEventListener('input', () => {
         if (!coverDataUrl) renderCoverPreview();
     });
 
-    // --- Вибір файлу ---
     coverPickBtn.addEventListener('click', () => coverInput.click());
 
     coverInput.addEventListener('change', () => {
@@ -261,7 +271,7 @@ function openAlbumEditor(album) {
 
         const reader = new FileReader();
         reader.onload = e => {
-            coverDataUrl = e.target.result;   // data:image/...;base64,...
+            coverDataUrl = e.target.result;
             coverName = file.name;
             coverSize = file.size;
             renderCoverPreview();
@@ -273,7 +283,6 @@ function openAlbumEditor(album) {
         reader.readAsDataURL(file);
     });
 
-    // --- Прибрати обкладинку ---
     coverClearBtn.addEventListener('click', () => {
         coverDataUrl = '';
         coverName = '';
@@ -283,7 +292,6 @@ function openAlbumEditor(album) {
         renderCoverPreview();
     });
 
-    // --- Закриття ---
     function close() {
         overlay.remove();
         document.removeEventListener('keydown', onEsc);
@@ -298,7 +306,6 @@ function openAlbumEditor(album) {
         if (e.target === overlay) close();
     });
 
-    // --- Submit ---
     form.addEventListener('submit', e => {
         e.preventDefault();
 
@@ -320,16 +327,16 @@ function openAlbumEditor(album) {
             const created = AlbumsStore.add(values);
             close();
             renderCatalog();
+            touchChanges();
             setTimeout(() => showNewAlbumHint(created), 100);
         } else {
             AlbumsStore.update(album.id, values);
             close();
             renderCatalog();
+            touchChanges();
         }
-        showUnsavedHint();
     });
 
-    // --- Фокус ---
     setTimeout(() => titleInput.focus(), 50);
 }
 
@@ -339,7 +346,7 @@ function openAlbumEditor(album) {
 
 async function downloadAlbumFile(album) {
     try {
-        const res = await fetch(DATA_BASE + album.file);
+        const res = await fetch(DATA_BASE + album.file, { cache: 'no-store' });
         if (!res.ok) {
             alert(`Файл ${album.file} не знайдено на сервері.`);
             return;
@@ -399,7 +406,7 @@ async function addLinksToAlbum(album, rawLinks, section) {
 
     let data = [];
     try {
-        const res = await fetch(DATA_BASE + album.file);
+        const res = await fetch(DATA_BASE + album.file, { cache: 'no-store' });
         if (res.ok) data = await res.json();
         if (!Array.isArray(data)) data = [];
     } catch (e) {
@@ -426,23 +433,21 @@ async function addLinksToAlbum(album, rawLinks, section) {
         });
     });
 
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: 'application/json'
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = album.file;
-    a.click();
-    URL.revokeObjectURL(url);
+    // Записуємо напряму через GitHub API (без VideosStore, бо альбом може
+    // бути не завантажений на цю сторінку)
+    try {
+        const content = JSON.stringify(data, null, 2);
+        const repoPath = 'data/' + album.file;
+        await GitHubAPI.writeFile(repoPath, content, `Add ${newIds.length} videos to ${album.file}`);
 
-    setTimeout(() => {
         alert(
             `Додано ${newIds.length} відео.\n\n` +
-            `Файл ${album.file} завантажено. Замініть його у теці data/ ` +
-            `і оновіть сторінку.`
+            `Файл ${album.file} оновлено на GitHub.`
         );
-    }, 200);
+        renderCatalog();
+    } catch (err) {
+        alert('Помилка збереження: ' + err.message);
+    }
 }
 
 /* ============================================================
@@ -460,55 +465,12 @@ async function removeAlbum(album) {
 
     AlbumsStore.remove(album.id);
     renderCatalog();
-    showUnsavedHint();
+    touchChanges();
 }
 
 /* ============================================================
-   ПІДКАЗКИ ПРО НЕЗБЕРЕЖЕНІ ЗМІНИ
+   ПІДКАЗКА ПРО СТВОРЕННЯ ФАЙЛУ ДАНИХ
    ============================================================ */
-
-function showUnsavedHint() {
-    if (!AlbumsStore.isDirty()) return;
-
-    let banner = document.getElementById('unsaved-banner');
-    if (!banner) {
-        banner = document.createElement('div');
-        banner.id = 'unsaved-banner';
-        banner.className = 'unsaved-banner';
-        banner.innerHTML = `
-            <span>⚠️ Є незбережені зміни в albums.json</span>
-            <button class="btn" id="save-albums-btn">💾 Зберегти albums.json</button>
-        `;
-        document.body.appendChild(banner);
-
-        banner.querySelector('#save-albums-btn').addEventListener('click', async () => {
-            const btn = banner.querySelector('#save-albums-btn');
-            btn.disabled = true;
-            btn.textContent = '💾 Збереження…';
-
-            try {
-                const result = await AlbumsStore.save();
-                AlbumsStore.markClean();
-                banner.remove();
-
-            if (result.method === 'both') {
-                    setStatus('✅ albums.json: записано локально та закомічено на GitHub.');
-                } else if (result.method === 'fs') {
-                    setStatus('✅ albums.json збережено у вибрану теку.');
-                } else if (result.method === 'github') {
-                    setStatus('✅ albums.json закомічено на GitHub (локально не записано).');
-                } else {
-                    setStatus('✅ albums.json завантажено в Downloads. Перетягніть його в data/.');
-                }
-            } catch (err) {
-                console.error(err);
-                btn.disabled = false;
-                btn.textContent = '💾 Спробувати ще раз';
-                setStatus('Помилка збереження: ' + err.message, true);
-            }
-        });
-    }
-}
 
 function showNewAlbumHint(album) {
     Modal.open({
@@ -519,28 +481,30 @@ function showNewAlbumHint(album) {
                 name: 'filename',
                 label: 'Назва файлу',
                 value: album.file,
-                hint: `Файл буде завантажено на ваш комп'ютер. Покладіть його у теку data/.`
+                hint: `Буде створено порожній файл на GitHub у теці data/.`
             }
         ],
-        onSubmit: values => {
+        onSubmit: async values => {
             const filename = values.filename.trim() || album.file;
             if (filename !== album.file) {
                 AlbumsStore.update(album.id, { file: filename });
             }
-            const blob = new Blob(['[]'], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
+            try {
+                await GitHubAPI.writeFile(
+                    'data/' + filename,
+                    '[]',
+                    `Create empty ${filename}`
+                );
+                renderCatalog();
+            } catch (err) {
+                alert('Не вдалось створити файл: ' + err.message);
+            }
         }
     });
 }
 
 /* ============================================================
    УТИЛІТИ: ПАРСИНГ YOUTUBE ID
-   (тимчасово тут; пізніше винесемо в js/youtube-utils.js)
    ============================================================ */
 
 function extractYouTubeIds(text) {
@@ -578,3 +542,4 @@ function extractYouTubeId(url) {
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', renderCatalog);
+// ═══ КІНЕЦЬ ФАЙЛУ index.js ═══
