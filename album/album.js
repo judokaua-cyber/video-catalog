@@ -1,5 +1,6 @@
 /* ============================================================
    Логіка сторінки альбому: каталог розділів
+   + автозбереження через AutoSave
    ============================================================ */
 
 const DATA_BASE = '../data/';
@@ -57,6 +58,20 @@ function extractYouTubeId(url) {
 }
 
 /* ============================================================
+   АВТОЗБЕРЕЖЕННЯ
+   ============================================================ */
+
+/**
+ * Позначити, що є зміни, і запустити таймер автозбереження.
+ * Викликати ПІСЛЯ кожної зміни.
+ */
+function touchChanges() {
+    if (window.AutoSave) {
+        AutoSave.schedule();
+    }
+}
+
+/* ============================================================
    ЗАВАНТАЖЕННЯ СТОРІНКИ
    ============================================================ */
 
@@ -89,6 +104,14 @@ async function init() {
     } catch (err) {
         console.warn('Файл відео не завантажено:', err.message);
         setStatus(`Файл ${currentAlbum.file} не знайдено. Створіть його з вмістом [].`, true);
+    }
+
+    // 3) Реєструємо сховища для автозбереження
+    if (window.AutoSave) {
+        AutoSave.setSources([
+            { name: VideosStore.filename || 'videos.json', store: VideosStore },
+            { name: 'albums.json', store: AlbumsStore }
+        ]);
     }
 
     applyAlbumMeta();
@@ -376,7 +399,6 @@ function openSectionEditor(section) {
         const newCover = coverDataUrl;
 
         if (isNew) {
-            // Перевірка на дублікат
             const existing = VideosStore.getSections();
             if (existing.some(s => s.name === newName)) {
                 alert(`Розділ "${newName}" уже існує.`);
@@ -393,7 +415,7 @@ function openSectionEditor(section) {
 
             close();
             renderSections();
-            showUnsavedHint();
+            touchChanges();
 
             setTimeout(() => {
                 const addNow = confirm(
@@ -432,7 +454,7 @@ function openSectionEditor(section) {
 
             close();
             renderSections();
-            showUnsavedHint();
+            touchChanges();
         }
     });
 
@@ -507,7 +529,7 @@ function addVideosToSection(section, rawLinks, rawTitles) {
     });
 
     renderSections();
-    showUnsavedHint();
+    touchChanges();
 
     return true;
 }
@@ -534,75 +556,7 @@ async function removeSection(section) {
     }
 
     renderSections();
-    showUnsavedHint();
-}
-
-/* ============================================================
-   БАНЕР НЕЗБЕРЕЖЕНИХ ЗМІН
-   ============================================================ */
-
-function showUnsavedHint() {
-    const needsAlbums = AlbumsStore.isDirty();
-    const needsVideos = VideosStore.isDirty();
-    if (!needsAlbums && !needsVideos) return;
-
-    let banner = document.getElementById('unsaved-banner');
-    if (banner) banner.remove();
-
-    banner = document.createElement('div');
-    banner.id = 'unsaved-banner';
-    banner.className = 'unsaved-banner';
-
-    const buttons = [];
-    if (needsVideos) {
-        buttons.push(`<button class="btn" data-save="videos">💾 Зберегти ${VideosStore.filename}</button>`);
-    }
-    if (needsAlbums) {
-        buttons.push(`<button class="btn" data-save="albums">💾 Зберегти albums.json</button>`);
-    }
-
-    banner.innerHTML = `
-        <span>⚠️ Є незбережені зміни</span>
-        ${buttons.join('')}
-    `;
-    document.body.appendChild(banner);
-
-    banner.querySelectorAll('[data-save]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const which = btn.dataset.save;
-            btn.disabled = true;
-            const originalText = btn.textContent;
-            btn.textContent = '💾 Збереження…';
-
-            try {
-                let result;
-                if (which === 'albums') {
-                    result = await AlbumsStore.save();
-                    AlbumsStore.markClean();
-                } else {
-                    result = await VideosStore.save();
-                    VideosStore.markClean();
-                }
-
-                showUnsavedHint();
-
-                if (result.method === 'both') {
-                    setStatus('✅ Записано локально та закомічено на GitHub.');
-                } else if (result.method === 'fs') {
-                    setStatus('✅ Збережено у вибрану теку.');
-                } else if (result.method === 'github') {
-                    setStatus('✅ Закомічено на GitHub (локально не записано).');
-                } else {
-                    setStatus('✅ Завантажено в Downloads. Перетягніть у data/.');
-                }
-            } catch (err) {
-                console.error(err);
-                btn.disabled = false;
-                btn.textContent = originalText;
-                setStatus('Помилка збереження: ' + err.message, true);
-            }
-        });
-    });
+    touchChanges();
 }
 
 /* ============================================================
@@ -610,3 +564,4 @@ function showUnsavedHint() {
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', init);
+// ═══ КІНЕЦЬ ФАЙЛУ album.js ═══
