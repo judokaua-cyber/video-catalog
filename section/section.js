@@ -1,5 +1,6 @@
 /* section/section.js
    Логіка сторінки розділу: каталог відео + підрозділи + групові дії.
+   Автозбереження через AutoSave.
 */
 
 let currentAlbum = null;
@@ -62,6 +63,16 @@ function escapeHtml(s) {
 function escapeAttr(s) { return escapeHtml(s); }
 
 /* ============================================================
+   АВТОЗБЕРЕЖЕННЯ
+   ============================================================ */
+
+function touchChanges() {
+    if (window.AutoSave) {
+        AutoSave.schedule();
+    }
+}
+
+/* ============================================================
    ЗАВАНТАЖЕННЯ СТОРІНКИ
    ============================================================ */
 
@@ -95,6 +106,13 @@ async function init() {
     } catch (err) {
         setStatus(`Файл ${currentAlbum.file} не знайдено: ` + err.message, true);
         return;
+    }
+
+    // Реєструємо сховище для автозбереження
+    if (window.AutoSave) {
+        AutoSave.setSources([
+            { name: VideosStore.filename || 'videos.json', store: VideosStore }
+        ]);
     }
 
     rebuildSectionVideos();
@@ -644,7 +662,7 @@ function openBulkSubsectionPicker() {
             updateStats();
             applyMeta();
             applyFilters();
-            showUnsavedHint();
+            touchChanges();
         }
     });
 }
@@ -669,7 +687,7 @@ function openBulkSectionPicker() {
             updateStats();
             applyMeta();
             applyFilters();
-            showUnsavedHint();
+            touchChanges();
         }
     });
 }
@@ -873,7 +891,7 @@ function openVideoEditor(item) {
         updateStats();
         applyMeta();
         applyFilters();
-        showUnsavedHint();
+        touchChanges();
     });
 
     setTimeout(() => titleInput.focus(), 50);
@@ -894,7 +912,7 @@ function openMoveDup(item) {
             updateStats();
             applyFilters();
             applyMeta();
-            showUnsavedHint();
+            touchChanges();
         }
     });
 }
@@ -913,7 +931,7 @@ function openSubsectionPicker(item) {
             updateStats();
             applyMeta();
             applyFilters();
-            showUnsavedHint();
+            touchChanges();
         }
     });
 }
@@ -943,55 +961,7 @@ async function removeVideo(item) {
     updateStats();
     applyFilters();
     applyMeta();
-    showUnsavedHint();
-}
-
-/* ============================================================
-   БАНЕР НЕЗБЕРЕЖЕНИХ ЗМІН
-   ============================================================ */
-
-function showUnsavedHint() {
-    const needsVideos = VideosStore.isDirty();
-    if (!needsVideos) return;
-
-    let banner = document.getElementById('unsaved-banner');
-    if (banner) banner.remove();
-
-    banner = document.createElement('div');
-    banner.id = 'unsaved-banner';
-    banner.className = 'unsaved-banner';
-    banner.innerHTML = `
-        <span>⚠️ Є незбережені зміни</span>
-        <button class="btn" data-save="videos">💾 Зберегти ${VideosStore.filename}</button>
-    `;
-    document.body.appendChild(banner);
-
-    banner.querySelector('[data-save]').addEventListener('click', async () => {
-        const btn = banner.querySelector('[data-save]');
-        btn.disabled = true;
-        btn.textContent = '💾 Збереження…';
-
-        try {
-            const result = await VideosStore.save();
-            VideosStore.markClean();
-            banner.remove();
-
-            if (result.method === 'both') {
-                setStatus('✅ Записано локально та закомічено на GitHub.');
-            } else if (result.method === 'fs') {
-                setStatus('✅ Збережено у вибрану теку.');
-            } else if (result.method === 'github') {
-                setStatus('✅ Закомічено на GitHub (локально не записано).');
-            } else {
-                setStatus('✅ Завантажено в Downloads. Перетягніть у data/.');
-            }
-        } catch (err) {
-            console.error(err);
-            btn.disabled = false;
-            btn.textContent = '💾 Спробувати ще раз';
-            setStatus('Помилка збереження: ' + err.message, true);
-        }
-    });
+    touchChanges();
 }
 
 /* ============================================================
