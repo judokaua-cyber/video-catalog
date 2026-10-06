@@ -67,6 +67,7 @@
             flex-grow: 1;
             margin: 0 -4px 16px;
             padding: 0 4px;
+            min-height: 80px;
         }
 
         .item-btn {
@@ -103,6 +104,39 @@
             font-size: 0.8rem;
             color: var(--muted);
             font-weight: 400;
+        }
+        .item-btn.new-section {
+            border-style: dashed;
+            color: var(--muted);
+            font-weight: 500;
+        }
+        .item-btn.new-section:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .item-btn.new-section.active {
+            border-style: solid;
+        }
+
+        .new-section-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .new-section-input input {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .new-section-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .new-section-input input.error {
+            border-color: var(--err);
         }
 
         .actions {
@@ -209,19 +243,22 @@
    add.html
    Додавання відео з YouTube у каталог.
    Крок 1: обрати альбом.
-   Крок 2: обрати розділ (за замовчуванням "00 Нерозподілені").
+   Крок 2: обрати розділ (наявний або створити новий).
    Крок 3: зберегти.
    ═══════════════════════════════════════════════════════════ */
 
 const UNDISTRIBUTED = '00 Нерозподілені';
 const ALBUMS_FILE = 'data/albums.json';
+const NEW_SECTION_VALUE = '__new_section__';
 
 let videoUrl = '';
 let videoTitle = '';
-let albums = [];           // [{id, title, file}, ...]
-let selectedAlbum = null;  // об'єкт альбому
-let sections = [];         // [{name, count}, ...]
+let albums = [];
+let selectedAlbum = null;
+let sections = [];
 let selectedSection = UNDISTRIBUTED;
+let isNewSectionMode = false;
+let newSectionName = '';
 
 /* ═══════════════════════════════════════════════════════════
    УТИЛІТИ
@@ -311,7 +348,6 @@ async function renderAlbumsScreen() {
         <div class="status"></div>
     `;
 
-    // Читаємо список альбомів
     try {
         setStatus('Завантаження альбомів…');
         const text = await GitHubAPI.readFileViaFetch(ALBUMS_FILE);
@@ -368,36 +404,113 @@ async function renderSectionsScreen() {
         }
         sections = buildSections(videos);
     } catch (e) {
-        // Якщо файл не існує — це нормально, розділів ще немає
         sections = [];
     }
 
     setStatus('');
 
+    renderSectionList();
+
+    document.getElementById('back-btn').addEventListener('click', () => {
+        selectedAlbum = null;
+        selectedSection = UNDISTRIBUTED;
+        isNewSectionMode = false;
+        newSectionName = '';
+        renderAlbumsScreen();
+    });
+
+    document.getElementById('save-btn').addEventListener('click', doSave);
+}
+
+function renderSectionList() {
     const list = document.getElementById('list');
     list.innerHTML = '';
 
-    // "00 Нерозподілені" — завжди перший, за замовчуванням
+    // "00 Нерозподілені" — завжди перший
     const undistributed = { name: UNDISTRIBUTED, count: 0, isVirtual: true };
     const existing = sections.find(s => s.name === UNDISTRIBUTED);
     if (existing) undistributed.count = existing.count;
 
-    renderSectionBtn(list, undistributed, true);
+    if (!isNewSectionMode) {
+        // Режим вибору наявного розділу
+        renderSectionBtn(list, undistributed, false);
 
-    // Решта розділів
-    sections
-        .filter(s => s.name !== UNDISTRIBUTED)
-        .forEach(sec => renderSectionBtn(list, sec, false));
+        sections
+            .filter(s => s.name !== UNDISTRIBUTED)
+            .forEach(sec => renderSectionBtn(list, sec, false));
 
-    // Кнопка "Назад"
-    document.getElementById('back-btn').addEventListener('click', () => {
-        selectedAlbum = null;
-        selectedSection = UNDISTRIBUTED;
-        renderAlbumsScreen();
-    });
+        // Кнопка "Створити новий розділ"
+        const newBtn = document.createElement('button');
+        newBtn.type = 'button';
+        newBtn.className = 'item-btn new-section';
+        newBtn.innerHTML = '<span>➕ Створити новий розділ…</span>';
+        newBtn.addEventListener('click', () => {
+            isNewSectionMode = true;
+            newSectionName = '';
+            selectedSection = NEW_SECTION_VALUE;
+            renderSectionList();
+        });
+        list.appendChild(newBtn);
 
-    // Кнопка "Зберегти"
-    document.getElementById('save-btn').addEventListener('click', doSave);
+    } else {
+        // Режим створення нового розділу
+        const inputWrap = document.createElement('div');
+        inputWrap.className = 'new-section-input';
+        inputWrap.innerHTML = `
+            <input type="text" id="new-section-name"
+                   placeholder="Назва нового розділу"
+                   value="${escapeAttr(newSectionName)}"
+                   autocomplete="off">
+            <button type="button" class="btn secondary" id="new-section-cancel">✕</button>
+        `;
+        list.appendChild(inputWrap);
+
+        const input = inputWrap.querySelector('#new-section-name');
+        const cancelBtn = inputWrap.querySelector('#new-section-cancel');
+
+        setTimeout(() => input.focus(), 50);
+
+        input.addEventListener('input', () => {
+            newSectionName = input.value;
+            selectedSection = newSectionName.trim() || NEW_SECTION_VALUE;
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            isNewSectionMode = false;
+            newSectionName = '';
+            selectedSection = UNDISTRIBUTED;
+            renderSectionList();
+        });
+
+        // Показуємо прев'ю нового розділу
+        const preview = document.createElement('button');
+        preview.type = 'button';
+        preview.className = 'item-btn active';
+        const displayName = newSectionName.trim() || '(введіть назву)';
+        preview.innerHTML = `<span>${escapeHtml(displayName)}</span><span class="check">✓</span>`;
+        preview.disabled = true;
+        list.appendChild(preview);
+
+        // Показуємо список існуючих нижче — щоб можна було переключитись
+        const sep = document.createElement('div');
+        sep.style.cssText = 'height:1px;background:var(--border);margin:8px 0;';
+        list.appendChild(sep);
+
+        renderSectionBtn(list, undistributed, true);
+
+        sections
+            .filter(s => s.name !== UNDISTRIBUTED)
+            .forEach(sec => renderSectionBtn(list, sec, true));
+    }
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+}
+function escapeAttr(s) {
+    return escapeHtml(s);
 }
 
 function buildSections(videos) {
@@ -411,29 +524,25 @@ function buildSections(videos) {
         .map(name => ({ name, count: counts[name] }));
 }
 
-function renderSectionBtn(container, section, isDefault) {
+function renderSectionBtn(container, section, inactive) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'item-btn';
-    if (isDefault && selectedSection === section.name) btn.classList.add('active');
+    if (inactive) btn.style.opacity = '0.7';
 
     const countText = section.count > 0 ? `<span class="count">${section.count}</span>` : '';
-    btn.innerHTML = `<span>${section.name}</span>${countText}`;
+    btn.innerHTML = `<span>${escapeHtml(section.name)}</span>${countText}`;
 
     if (selectedSection === section.name) {
-        btn.innerHTML = `<span>${section.name}</span><span class="check">✓</span>`;
+        btn.classList.add('active');
+        btn.innerHTML = `<span>${escapeHtml(section.name)}</span><span class="check">✓</span>`;
     }
 
     btn.addEventListener('click', () => {
+        isNewSectionMode = false;
+        newSectionName = '';
         selectedSection = section.name;
-        document.querySelectorAll('.item-btn').forEach(b => {
-            b.classList.remove('active');
-            // Прибираємо галочку з усіх
-            const check = b.querySelector('.check');
-            if (check) check.remove();
-        });
-        btn.classList.add('active');
-        btn.innerHTML = `<span>${section.name}</span><span class="check">✓</span>`;
+        renderSectionList();
     });
 
     container.appendChild(btn);
@@ -445,6 +554,25 @@ function renderSectionBtn(container, section, isDefault) {
 
 async function doSave() {
     if (!selectedAlbum) return;
+
+    // Перевірка нового розділу
+    let finalSection = selectedSection;
+    if (isNewSectionMode) {
+        finalSection = newSectionName.trim();
+        if (!finalSection) {
+            setStatus('Введіть назву нового розділу', true);
+            document.querySelector('#new-section-name')?.focus();
+            return;
+        }
+        // Перевірка на дублікат
+        const dup = sections.some(s =>
+            s.name.toLowerCase() === finalSection.toLowerCase()
+        );
+        if (dup) {
+            setStatus('Розділ з такою назвою вже існує', true);
+            return;
+        }
+    }
 
     const saveBtn = document.getElementById('save-btn');
     saveBtn.disabled = true;
@@ -475,14 +603,19 @@ async function doSave() {
 
         videos.push({
             title: videoTitle || 'Без назви',
-            section: selectedSection,
+            section: finalSection,
             url: 'https://www.youtube.com/watch?v=' + newId
         });
 
         const content = JSON.stringify(videos, null, 2);
         await GitHubAPI.writeFile(repoPath, content, `Add video to ${albumFile}`);
 
-        renderSuccess();
+        // Якщо створено новий розділ — додаємо запис в albums.json
+        if (isNewSectionMode) {
+            await ensureSectionInAlbumsJson(finalSection);
+        }
+
+        renderSuccess(finalSection);
 
     } catch (err) {
         console.error(err);
@@ -492,12 +625,51 @@ async function doSave() {
     }
 }
 
-function renderSuccess() {
+/* ═══════════════════════════════════════════════════════════
+   ОНОВЛЕННЯ albums.json (для нового розділу)
+   ═══════════════════════════════════════════════════════════ */
+
+async function ensureSectionInAlbumsJson(sectionName) {
+    try {
+        const text = await GitHubAPI.readFileViaFetch(ALBUMS_FILE);
+        if (!text) return;
+
+        const list = JSON.parse(text);
+        if (!Array.isArray(list)) return;
+
+        const idx = list.findIndex(a => a.id === selectedAlbum.id);
+        if (idx === -1) return;
+
+        if (!list[idx].sections) list[idx].sections = {};
+
+        if (!list[idx].sections[sectionName]) {
+            list[idx].sections[sectionName] = {
+                description: '',
+                cover: ''
+            };
+            const content = JSON.stringify(list, null, 2);
+            await GitHubAPI.writeFile(
+                ALBUMS_FILE,
+                content,
+                `Add section "${sectionName}" to ${selectedAlbum.id}`
+            );
+        }
+    } catch (e) {
+        console.warn('ensureSectionInAlbumsJson error:', e);
+        // Не кидаємо — відео вже додано, це не критично
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   УСПІХ
+   ═══════════════════════════════════════════════════════════ */
+
+function renderSuccess(sectionName) {
     const card = document.getElementById('card');
     card.innerHTML = `
         <div class="success">
             <div class="check">✅</div>
-            <div class="msg">Збережено в «${selectedSection}»</div>
+            <div class="msg">Збережено в «${escapeHtml(sectionName)}»</div>
         </div>
     `;
     setTimeout(() => {
@@ -511,7 +683,6 @@ function renderSuccess() {
    ═══════════════════════════════════════════════════════════ */
 
 async function startAfterToken() {
-    // Читаємо параметри
     videoUrl = getParam('url') || '';
     videoTitle = getParam('title') || '';
 
@@ -524,7 +695,6 @@ async function startAfterToken() {
         }
     }
 
-    // Якщо URL немає — заглушка
     if (!videoUrl) {
         document.getElementById('card').innerHTML = `
             <h1 style="font-size:1.1rem;margin:0 0 12px;">Додати відео</h1>
@@ -537,7 +707,6 @@ async function startAfterToken() {
         return;
     }
 
-    // Якщо назви немає — отримуємо через noembed
     if (!videoTitle) {
         const vid = extractYouTubeId(videoUrl);
         if (vid) {
@@ -546,7 +715,6 @@ async function startAfterToken() {
         }
     }
 
-    // Показуємо список альбомів
     renderAlbumsScreen();
 }
 

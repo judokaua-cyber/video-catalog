@@ -1,5 +1,6 @@
 /* js/modal-move-dup.js
    Модалка "Переміщення / Дублювання" відео між розділами ОДНОГО альбому.
+   Підтримує створення нового розділу на льоту.
    Виклик: MoveDup.open({ album, currentSection, item, onDone })
 */
 
@@ -46,7 +47,6 @@ window.MoveDup = (function () {
     }
 
     /* ---------------- МОСТИ ДО STORE ---------------- */
-    // Якщо патч у store-videos.js не застосовано — працюємо через наявні методи.
 
     function store_moveVideo(index, newSection) {
         if (typeof VideosStore.moveVideo === 'function') {
@@ -99,8 +99,6 @@ window.MoveDup = (function () {
     /* ---------------- ВІДКРИТТЯ ---------------- */
 
     function open(opts) {
-        console.log('[MoveDup.open]', opts);
-
         if (!opts || !opts.album || !opts.item) {
             console.warn('MoveDup.open: бракує opts.album або opts.item');
             toast('Помилка: немає даних для переміщення', true);
@@ -117,13 +115,6 @@ window.MoveDup = (function () {
             sections: listSections()
         };
 
-        console.log('[MoveDup] sections:', state.sections);
-
-        if (!state.sections.length) {
-            toast('У цьому альбомі немає розділів', true);
-            return;
-        }
-
         try {
             renderOverlay();
         } catch (e) {
@@ -135,8 +126,6 @@ window.MoveDup = (function () {
     /* ---------------- ОВЕРЛЕЙ ---------------- */
 
     function renderOverlay() {
-        // На випадок повторних кліків — прибираємо старий overlay,
-        // але НЕ чіпаємо state
         closeOverlay(true);
 
         const overlay = document.createElement('div');
@@ -175,7 +164,7 @@ window.MoveDup = (function () {
         if (e.key === 'Escape') closeOverlay();
     }
 
-        function closeOverlay(keepState) {
+    function closeOverlay(keepState) {
         var overlay = document.getElementById('md-overlay');
         if (overlay) overlay.remove();
         document.removeEventListener('keydown', onEsc);
@@ -189,10 +178,7 @@ window.MoveDup = (function () {
 
         var crumbs = document.getElementById('md-crumbs');
         var step = document.getElementById('md-step');
-        if (!crumbs || !step) {
-            console.warn('renderStep: немає #md-crumbs або #md-step');
-            return;
-        }
+        if (!crumbs || !step) return;
 
         try {
             var albumTitle = (state.album && state.album.title) || 'Альбом';
@@ -232,6 +218,7 @@ window.MoveDup = (function () {
         var grid = document.createElement('div');
         grid.className = 'md-grid';
 
+        // Наявні розділи
         state.sections.forEach(function (sec) {
             var isCurrent = sec.name === state.currentSection;
             var cover = getSectionCover(state.album, sec.name);
@@ -266,6 +253,22 @@ window.MoveDup = (function () {
             grid.appendChild(card);
         });
 
+        // Картка "Створити новий розділ"
+        var newCard = document.createElement('button');
+        newCard.type = 'button';
+        newCard.className = 'md-card md-card-new-sub';
+        newCard.innerHTML =
+            '<div class="md-card-cover md-card-cover-new">' +
+                '<span class="md-card-plus">+</span>' +
+            '</div>' +
+            '<div class="md-card-body">' +
+                '<div class="md-card-title">Новий розділ…</div>' +
+            '</div>';
+        newCard.addEventListener('click', function () {
+            showNewSectionInput(container);
+        });
+        grid.appendChild(newCard);
+
         container.appendChild(grid);
 
         var cancelRow = document.createElement('div');
@@ -277,6 +280,71 @@ window.MoveDup = (function () {
         cancel.addEventListener('click', closeOverlay);
         cancelRow.appendChild(cancel);
         container.appendChild(cancelRow);
+    }
+
+    function showNewSectionInput(container) {
+        container.innerHTML = '';
+
+        var hint = document.createElement('p');
+        hint.className = 'md-hint';
+        hint.textContent = 'Введіть назву нового розділу в альбомі «' +
+                           escapeHtml((state.album && state.album.title) || '') + '»:';
+        container.appendChild(hint);
+
+        var field = document.createElement('div');
+        field.className = 'modal-field';
+        field.innerHTML =
+            '<input type="text" id="md-new-section-name" ' +
+                   'placeholder="Наприклад: УДУШЕННЯ" autocomplete="off">';
+        container.appendChild(field);
+
+        var actions = document.createElement('div');
+        actions.className = 'modal-actions';
+        actions.innerHTML =
+            '<button type="button" class="btn secondary" id="md-new-back">← Назад</button>' +
+            '<button type="button" class="btn" id="md-new-ok">Далі</button>';
+        container.appendChild(actions);
+
+        var input = container.querySelector('#md-new-section-name');
+        setTimeout(function () { input.focus(); }, 50);
+
+        function goNext() {
+            var name = input.value.trim();
+            if (!name) {
+                input.classList.add('error');
+                setTimeout(function () { input.classList.remove('error'); }, 1500);
+                input.focus();
+                return;
+            }
+
+            // Перевірка на дублікат
+            var exists = state.sections.some(function (s) {
+                return s.name.toLowerCase() === name.toLowerCase();
+            });
+            if (exists) {
+                alert('Розділ з такою назвою вже існує. Оберіть іншу назву.');
+                input.focus();
+                return;
+            }
+
+            state.targetSection = name;
+            state.step = 2;
+            renderStep();
+        }
+
+        container.querySelector('#md-new-back').addEventListener('click', function () {
+            state.targetSection = null;
+            renderStep();
+        });
+
+        container.querySelector('#md-new-ok').addEventListener('click', goNext);
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                goNext();
+            }
+        });
     }
 
     function renderStepActions(container) {
@@ -332,6 +400,9 @@ window.MoveDup = (function () {
             return;
         }
 
+        // Якщо це новий розділ — додати його в метадані альбому
+        ensureSectionInAlbum(targetSection);
+
         var title = (item.video && item.video.title) || 'відео';
         finish();
         toast('«' + title + '» переміщено в «' + targetSection + '»');
@@ -354,6 +425,9 @@ window.MoveDup = (function () {
             section: targetSection,
             url: original.url
         };
+        if (original.subsection) {
+            copy.subsection = original.subsection;
+        }
 
         if (targetSection === currentSection) {
             store_insertVideo(item.index + 1, copy);
@@ -361,8 +435,38 @@ window.MoveDup = (function () {
             VideosStore.addVideo(copy);
         }
 
+        // Якщо це новий розділ — додати його в метадані альбому
+        ensureSectionInAlbum(targetSection);
+
         finish();
         toast('Створено копію в «' + targetSection + '»');
+    }
+
+    /* ---------------- МЕТАДАНІ АЛЬБОМУ ---------------- */
+
+    function ensureSectionInAlbum(sectionName) {
+        try {
+            // Якщо розділ уже є у sections — нічого не робимо
+            if (state.album.sections && state.album.sections[sectionName]) {
+                return;
+            }
+
+            // Додаємо порожній запис, щоб розділ мав місце для опису/обкладинки
+            if (!state.album.sections) state.album.sections = {};
+            state.album.sections[sectionName] = {
+                description: '',
+                cover: ''
+            };
+
+            // Оновлюємо альбом у AlbumsStore
+            if (typeof AlbumsStore !== 'undefined' && AlbumsStore.update) {
+                AlbumsStore.update(state.album.id, {
+                    sections: state.album.sections
+                });
+            }
+        } catch (e) {
+            console.warn('ensureSectionInAlbum error:', e);
+        }
     }
 
     function finish() {
