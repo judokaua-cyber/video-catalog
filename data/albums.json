@@ -202,5 +202,13 @@
         "cover": ""
       }
     }
+  },
+  {
+    "id": "tekegram",
+    "title": "Tekegram",
+    "description": "",
+    "cover": "",
+    "file": "tekegram.json",
+    "sections": {}
   }
 ]
