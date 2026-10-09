@@ -212,11 +212,11 @@
     }
   },
   {
-    "id": "tekegram",
+    "id": "telegram",
     "title": "Telegram",
     "description": "",
     "cover": "",
-    "file": "tekegram.json",
+    "file": "telegram.json",
     "sections": {}
   }
 ]
