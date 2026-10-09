@@ -3394,11 +3394,6 @@
     "url": "https://www.youtube.com/watch?v=2jN5ZqMww_o"
   },
   {
-    "title": "Переносний міні-столик",
-    "section": "Меблі",
-    "url": "https://www.youtube.com/watch?v=4yuUC0y9nMM"
-  },
-  {
     "title": "Узор руками без інструмента",
     "section": "00 Нерозподілені",
     "url": "https://www.youtube.com/watch?v=8Ko4wgLhAmU"
@@ -6025,7 +6020,8 @@
   {
     "title": "Плаваючі полиці",
     "section": "Меблі",
-    "url": "https://www.youtube.com/watch?v=EMKPb5KptgQ"
+    "url": "https://www.youtube.com/watch?v=EMKPb5KptgQ",
+    "subsection": "Полиці"
   },
   {
     "title": "Навісна полиця",
@@ -6062,7 +6058,8 @@
   {
     "title": "Найпростіші плаваючі полиці",
     "section": "Меблі",
-    "url": "https://www.youtube.com/watch?v=WvoAOukL_WQ"
+    "url": "https://www.youtube.com/watch?v=WvoAOukL_WQ",
+    "subsection": "Полиці"
   },
   {
     "title": "This is how to make a simple folding step stool",
