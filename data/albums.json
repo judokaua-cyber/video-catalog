@@ -217,6 +217,11 @@
     "description": "",
     "cover": "",
     "file": "telegram.json",
-    "sections": {}
+    "sections": {
+      "Полиці": {
+        "description": "",
+        "cover": ""
+      }
+    }
   }
 ]
